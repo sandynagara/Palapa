@@ -16,7 +16,8 @@ class StylePalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         super(StylePalapaDialog, self).__init__(parent)
         self.setupUi(self)
         self.upload.clicked.connect(self.import_layer)
-        self.browse_metadata.clicked.connect(self.import_metadata)
+        self.browse_metadata.clicked.connect(self.browse_metadata)
+        self.browse_layer.clicked.connect(self.browse_layer)
         
       
     def import_layer(self):
@@ -26,7 +27,11 @@ class StylePalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         layer.saveSldStyle(f'D:/{layerName}.sld')
         os.remove(f'D:/{layerName}.sld')
 
-    def import_metadata(self):
-        filename1, text = QFileDialog.getOpenFileName()
-        self.select_layer.setText(filename1)
+    def browse_metadata(self):
+        filename1, _ = QFileDialog.getOpenFileName()
+        #self.select_layer.setText(filename1)
         print(filename1)
+
+    def browse_layer(self):
+        filename2, _ = QFileDialog.getOpenFileName()
+        print(filename2)
