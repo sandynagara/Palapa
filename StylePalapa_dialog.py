@@ -6,7 +6,7 @@ from qgis.core import QgsProject
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'StylePalapa_dialog_base.ui'))
+    os.path.dirname(__file__), 'StylePalapa_dialog_base2.ui'))
 
 class StylePalapaDialog(QtWidgets.QDialog, FORM_CLASS):
     
