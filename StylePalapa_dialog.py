@@ -29,7 +29,6 @@ class StylePalapaDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def browse_metadata(self):
         filename1, _ = QFileDialog.getOpenFileName()
-        #self.select_layer.setText(filename1)
         print(filename1)
 
     def browse_layer(self):
