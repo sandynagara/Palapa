@@ -16,8 +16,8 @@ class StylePalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         super(StylePalapaDialog, self).__init__(parent)
         self.setupUi(self)
         self.upload.clicked.connect(self.import_layer)
-        # self.browser.clicked.connect(self.import_meteadata)
-      
+        self.browse_metadata.clicked.connect(self.import_metadata)
+        
     def import_layer(self):
         layerName = self.select_layer.currentText()
         print(layerName)
@@ -25,7 +25,7 @@ class StylePalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         layer.saveSldStyle(f'D:/{layerName}.sld')
         os.remove(f'D:/{layerName}.sld')
 
-    def import_meteadata(self):
+    def import_metadata(self):
         filename1, text = QFileDialog.getOpenFileName()
         self.select_layer.setText(filename1)
         print(filename1)
