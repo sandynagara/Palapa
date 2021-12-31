@@ -16,7 +16,7 @@ class StylePalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         super(StylePalapaDialog, self).__init__(parent)
         self.setupUi(self)
         self.upload.clicked.connect(self.import_layer)
-        self.browser.clicked.connect(self.import_meteadata)
+        # self.browser.clicked.connect(self.import_meteadata)
       
     def import_layer(self):
         layerName = self.select_layer.currentText()
