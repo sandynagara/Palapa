@@ -21,14 +21,14 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QThreadPool
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
-from .StylePalapa_dialog import StylePalapaDialog
+from .ui.UploadPalapa_dialog import PalapaDialog
 import os.path
 
 
@@ -62,6 +62,9 @@ class StylePalapa:
         # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&StylePalapa')
+
+        self.threadpool = QThreadPool()
+        self.check_worker = None
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -187,7 +190,7 @@ class StylePalapa:
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
-            self.dlg = StylePalapaDialog()
+            self.dlg = PalapaDialog()
 
         # show the dialog
         self.dlg.show()
@@ -198,3 +201,5 @@ class StylePalapa:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
+    
+    # 
