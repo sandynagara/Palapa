@@ -1,4 +1,6 @@
 import os
+import json
+import requests
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
@@ -54,12 +56,21 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
     def runConnectionTest(self):
         # Clean label
         self.connectionValuesChanged()
-        self.check_worker = CheckConnectionWorker(url=self.lineEdit_url.text(),
-                                                  user=self.lineEdit_username.text(),
-                                                  password=self.lineEdit_password.text())
-        self.check_worker.signals.result.connect(self.connectionStatus)
-        self.check_worker.signals.error.connect(self.printError)
-        self.threadpool.start(self.check_worker)
+
+        # login
+        url_login=self.lineEdit_url.text()
+        user=self.lineEdit_username.text()
+        password=self.lineEdit_password.text()
+
+        login_payload = {"username": user, "password": password}
+        login_json = json.dumps(login_payload)
+        login_api = '/api/login'
+        url = url_login+login_api
+        response_API = requests.post(url, login_payload)
+        print(url)
+        print(response_API.text)
+        print(response_API.status_code)
+        
 
     #Upload Tab2
     def import_layer(self):
