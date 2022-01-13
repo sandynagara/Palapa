@@ -3,9 +3,9 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=StylePalapa
+name=UploadPalapa
 qgisMinimumVersion=3.0
-description=Plugin yang berguna untuk mengupload style ke dalam palapa
+description=Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke geoserver palapa
 version=0.1
 author=BIG
 email=sandysetyanagara@mail.ugm.ac.id

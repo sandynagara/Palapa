@@ -2,7 +2,11 @@ import json
 import os
 from urllib.parse import unquote
 
+<<<<<<< HEAD
 from requests import HTTPError
+=======
+from requests import request, HTTPError
+>>>>>>> 6a5a81a145fb3755fe70279b8a2aad8d39965168
 
 
 class Geoserver:
