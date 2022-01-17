@@ -9,6 +9,7 @@ from qgis.PyQt.QtWidgets import QFileDialog
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QThreadPool
 
 from requests import HTTPError
+from palapa import LoginPalapa
 
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
@@ -42,11 +43,9 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
     def runConnectionTest(self):
         # Clean label
         self.connectionValuesChanged()
-
-        # login
-        url_login=self.lineEdit_url.text()
-        user=self.lineEdit_username.text()
-        password=self.lineEdit_password.text()
+        self.connectionTest = LoginPalapa(url=self.lineEdit_url.text(),
+                                          user=self.lineEdit_username.text(),
+                                          password=self.lineEdit_password.text())
 
         login_payload = {"username": user, "password": password}
         login_json = json.dumps(login_payload)
