@@ -191,11 +191,26 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         filename1, _ = QFileDialog.getOpenFileName()
         print(filename1)
         self.lineEdit_metadata.setText(filename1)
+        return filename1
 
     def start_browse_style(self):
         filename2, _ = QFileDialog.getOpenFileName()
         print(filename2)
         self.lineEdit_style.setText(filename2)
         return filename2
+
+    #upload Metadata
+    def uploadMetadata(self) :
+        metadataPath = self.start_browse_metadata()
+        filesMeta = {'file': open(metadataPath,'rb')}
+        params = {"USER":self.user,"GRUP":self.grup,"KODESIMPUL":self.simpulJaringan}
+        urlMeta = self.url+"/api/meta/links"
+        responseAPIMeta = requests.post(urlMeta,files=filesMeta,params=params)
+        print (responseAPIMeta.text)
+        
+        #if self.checkMetadataExist(metadataPath['xml']) :
+            #print("metadata lengkap")
+    
+  
 
 

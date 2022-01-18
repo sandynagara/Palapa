@@ -2,9 +2,6 @@ import json
 import os
 from urllib.parse import unquote
 
-<<<<<<< HEAD
-from requests import HTTPError
-=======
 from requests import request, HTTPError
 
 
