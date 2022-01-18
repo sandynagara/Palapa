@@ -354,20 +354,20 @@
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-color:white;
-background-color:rgb(1, 125, 197);
-border:0px;
-border-radius: 4px;
-padding: 0px;
-font-size: 14px;
-height:25px;
-width:140px;
-}
-QPushButton:hover
-{
-background-color:rgb(21, 50, 92);
-color:white
-}
+                color:white;
+                background-color:rgb(1, 125, 197);
+                border:0px;
+                border-radius: 4px;
+                padding: 0px;
+                font-size: 14px;
+                height:25px;
+                width:140px;
+                }
+                QPushButton:hover
+                {
+                background-color:rgb(21, 50, 92);
+                color:white
+                }
 </string>
             </property>
             <property name="text">

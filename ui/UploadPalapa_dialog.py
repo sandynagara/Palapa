@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+from zipfile import ZipFile
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
@@ -27,10 +28,14 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         self.lineEdit_password.textChanged.connect(self.connectionValuesChanged)
         self.lineEdit_url.textChanged.connect(self.connectionValuesChanged)
         #Tab2
-        self.upload.clicked.connect(self.import_layer)
+        self.upload.setEnabled(False)
+        self.upload.clicked.connect(self.uploadFile)
         self.browse_metadata.clicked.connect(self.start_browse_metadata)
         self.browse_style.clicked.connect(self.start_browse_style)
-
+        self.url = None
+        self.simpulJaringan=None
+        self.grup = None
+        self.user=None
         self.radioButton_StyleBrowse.toggled.connect(self.browse_style.setEnabled)
         self.radioButton_StyleBrowse.toggled.connect(self.lineEdit_style.setEnabled)
 
@@ -52,52 +57,146 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         login_json = json.dumps(login_payload)
         login_api = '/api/login'
         url = url_login+login_api
-        response_API = requests.post(url, login_json)
 
         try:
-            response_text = json.loads(response_API.text)
+            response_API = requests.post(url, data = login_json)
+            responseApiJson = json.loads(response_API.text)
             print(response_API.text)
             if response_API.status_code == 200:
-                status = response_text['MSG']
+                status = responseApiJson['MSG']
                 if status == 'Valid Info':             
-                    self.label_status.setStyleSheet("background-color: lightgreen")
+                    self.label_status.setStyleSheet("color: white; background-color: #4AA252; border-radius: 4px;")
                     self.label_status.setText('Terhubung')
+                    self.label_status2.setText('')
+                    if(responseApiJson['Result']):
+                        self.grup = responseApiJson['grup']
+                        self.user = responseApiJson['user']
+                        self.url = url_login
+                        responseSimpul = requests.get(self.url+'/api/sisteminfo')
+                        responseSimpul = json.loads(responseSimpul.text)
+                        self.simpulJaringan = responseSimpul['kodesimpul'].split(",")[0]
+                        self.upload.setEnabled(True)
+                    print(responseApiJson)
                 else:
-                    self.label_status.setStyleSheet("background-color: rgb(255, 0, 0)")
+                    self.label_status.setStyleSheet("color: white; background-color: #C4392A; border-radius: 4px;")
                     self.label_status.setText(status)
+                    self.label_status2.setText('Hubungkan terlebih dahulu')
+                    self.upload.setEnabled(False)
             else:
                 self.label_status.setText("CEK!!")
-        except HTTPError as err:
-            self.label_status.setStyleSheet("background-color: rgb(255, 0, 0)")
-            self.label_status.setText(err)
+                self.label_status2.setText('Hubungkan terlebih dahulu')
+                self.upload.setEnabled(False)             
         except Exception as err:
-            self.label_status.setStyleSheet("background-color: rgb(255, 0, 0)")
-            self.label_status.setText(err)    
+            print(err)
+            self.label_status.setStyleSheet("color: white; background-color: #C4392A; border-radius: 4px;")
+            self.label_status.setText('Cek URL atau koneksi internet Anda')
+            self.label_status2.setText('Hubungkan terlebih dahulu')
+            self.upload.setEnabled(False)          
 
-  
-    #def connectionStatus(self):
-    #    if response_API.status_code == 200:
-    #        response_text = json.loads(response_API.text)
-    #        print(response_text['MSG'])
-    #        status = response_text['MSG']
-    #        if status == 'Valid Info':
-               
-    #            self.label_status.setStyleSheet("background-color: lightgreen")
-    #            self.label_status.setText('Terhubung')
-    #        else:
-    #            self.label_status.setStyleSheet("background-color: rgb(255, 0, 0)")
-    #            self.label_status.setText(status)
-    #    else:
-    #        self.label_status.setText(response_API.status_code)
-        
 
     #Upload Tab2
-    def import_layer(self):
+    def uploadFile(self):
+        layerPath = self.exportLayer()
+       
+        if self.checkFileExist(layerPath['shp']) and self.checkFileExist(layerPath['dbf']) and self.checkFileExist(layerPath['shx']) and self.checkFileExist(layerPath['prj']) :
+            print("file Lengkap")
+            if(self.radioButton_StyleQgis.isChecked()):
+                sldPath = self.exportSld()
+            else:
+                sldPath = self.start_browse_style()
+            filesSld = {'file': open(sldPath,'rb')}
+            params = {"USER":self.user,"GRUP":self.grup,"KODESIMPUL":self.simpulJaringan}
+            urlSld = self.url+"/api/styles/add"
+            responseAPISld = requests.post(urlSld,files=filesSld,params=params)
+            zipShp = ZipFile(f"{layerPath['shp'].split('.')[0]}"+'.zip', 'w')
+
+            # Add multiple files to the zip
+            print(layerPath['shp'].split('.')[0].split('/')[-1])
+            zipShp.write(f"{layerPath['shp']}",os.path.basename(layerPath['shp']))
+            zipShp.write(f"{layerPath['dbf']}",os.path.basename(layerPath['dbf']))
+            zipShp.write(f"{layerPath['shx']}",os.path.basename(layerPath['shx']))
+            zipShp.write(f"{layerPath['prj']}",os.path.basename(layerPath['prj']))
+            # close the Zip File
+            zipShp.close()
+            files = {'file': open(f"{layerPath['shp'].split('.')[0]}"+'.zip','rb')}
+            print(files)
+            
+            urlUpload = self.url+"/api/upload"
+            responseAPIZip = requests.post(urlUpload,files=files,params=params)
+            dataPublish = json.loads(responseAPIZip.text)
+            print(dataPublish,"publish")
+            self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
+
+            if(self.radioButton_StyleQgis.isChecked()):
+                filesSld['file'].close()
+                os.remove(sldPath)
+            files['file'].close() 
+            os.remove(layerPath['shp'].split('.')[0]+'.zip')
+
+            # filesShp = {'file': open(layerPath['shp'],'rb')}
+            # filesDbf = {'file': open(layerPath['dbf'],'rb')}
+            # filesShx = {'file': open(layerPath['shx'],'rb')}
+            # filesPrj = {'file': open(layerPath['prj'],'rb')}
+
+            # urlShp = self.url+"/api/uploadshp"
+            # urlDbf = self.url+"/api/uploaddbf"
+            # urlShx = self.url+"/api/uploadshx"
+            # urlPrj = self.url+"/api/uploadprj"
+      
+            # print(urlShp)
+
+            # responseAPIShp = requests.post(urlShp,files=filesShp,params=params)
+            # responseAPIDbf = requests.post(urlDbf,files=filesDbf,params=params)
+            # responseAPIShx = requests.post(urlShx,files=filesShx,params=params)
+            # responseAPIPrj = requests.post(urlPrj,files=filesPrj,params=params)
+       
+            # print(responseAPISld.text)
+            # print(responseAPIPrj.text)
+            # dataPublish = json.loads(responseAPIPrj.text)
+            # self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
+   
+        else :
+            print("file Tidak Lengkap")
+    
+    def publish(self,kodeEpsg,Lid,Tipe,id):
+        url = self.url + "/api/publish"
+        dataPublish = {"pubdata":{"LID": Lid, "TIPE": Tipe,"ID":id,"ABS":"","SEPSG":kodeEpsg,"USER":self.user,"GRUP":self.grup}}
+        dataPublish = json.dumps(dataPublish)
+        respond = requests.post(url,data=f"dataPublish={dataPublish}")
+        print(respond.text)
+      
+    def exportLayer(self):
         layerName = self.select_layer.currentText()
-        print(layerName)
         layer = QgsProject().instance().mapLayersByName(layerName)[0]
-        layer.saveSldStyle(f'D:/{layerName}.sld')
-        os.remove(f'D:/{layerName}.sld')
+        source = layer.source()
+        source = source.split("|")
+        try:
+            shp = source[0]
+            prj = source[0].replace(".shp", ".prj")
+            dbf = source[0].replace(".shp", ".dbf")
+            shx = source[0].replace(".shp", ".shx")
+            sourceFile = json.loads('{"shp":"%s","prj":"%s","dbf":"%s","shx":"%s","nama":"%s"}'%(shp,prj,dbf,shx,layerName))
+            return sourceFile
+        except:
+            return print("File Tidak ditemukan")
+   
+    def checkFileExist(self,filePath):
+        fileExist = True
+        if os.path.isfile(filePath):
+            print ("File exist")
+            fileExist = True
+        else:
+            print ("File not exist")
+            fileExist = False
+        return fileExist
+
+    def exportSld(self):
+        layerName = self.select_layer.currentText()
+        layer = QgsProject().instance().mapLayersByName(layerName)[0]
+        path = f'D:/{layerName}.sld'
+        layer.saveSldStyle(path)
+        return path
+    
 
     def start_browse_metadata(self):
         filename1, _ = QFileDialog.getOpenFileName()
@@ -108,5 +207,6 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         filename2, _ = QFileDialog.getOpenFileName()
         print(filename2)
         self.lineEdit_style.setText(filename2)
+        return filename2
 
 
