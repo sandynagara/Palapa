@@ -36,6 +36,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         self.simpulJaringan=None
         self.grup = None
         self.user=None
+        self.pathMeta = None
         self.radioButton_StyleBrowse.toggled.connect(self.browse_style.setEnabled)
         self.radioButton_StyleBrowse.toggled.connect(self.lineEdit_style.setEnabled)
 
@@ -117,6 +118,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
             dataPublish = json.loads(responseAPIZip.text)
             print(dataPublish,"publish")
             self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
+            self.uploadMetadata(dataPublish['LID'])
 
             if(self.radioButton_StyleQgis.isChecked()):
                 filesSld['file'].close()
@@ -181,17 +183,11 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
     
 
     def start_browse_metadata(self):
-<<<<<<< HEAD
-        filename1, _ = QFileDialog.getOpenFileName()
+        filter = "XML files (*.xml)"
+        filename1, _ = QFileDialog.getOpenFileName(None, "Import XML", "",filter)
         print(filename1)
         self.lineEdit_metadata.setText(filename1)
-        return filename1
-=======
-        filter = "XML files (*.xml)"
-        filePath, _ = QFileDialog.getOpenFileName(None, "Import XML", "",filter)
-        print(filePath)
-        self.lineEdit_metadata.setText(filePath)
->>>>>>> 7045110785c1a71e3ebbaf7fd7abefedaa3d6885
+        self.pathMeta = filename1
 
     def start_browse_style(self):
         filter = "SLD files (*.sld)"
@@ -201,13 +197,15 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         return filePath
 
     #upload Metadata
-    def uploadMetadata(self) :
-        metadataPath = self.start_browse_metadata()
+    def uploadMetadata(self, Lid) :
+        metadataPath = self.pathMeta
         filesMeta = {'file': open(metadataPath,'rb')}
-        params = {"USER":self.user,"GRUP":self.grup,"KODESIMPUL":self.simpulJaringan}
-        urlMeta = self.url+"/api/meta/links"
+        params = {"akses":"PUBLIC","identifier":Lid,"KODESIMPUL":self.simpulJaringan}
+        urlMeta = self.url+"/api/meta/link"
         responseAPIMeta = requests.post(urlMeta,files=filesMeta,params=params)
         print (responseAPIMeta.text)
+        return responseAPIMeta.text
+        
         
         #if self.checkMetadataExist(metadataPath['xml']) :
             #print("metadata lengkap")
