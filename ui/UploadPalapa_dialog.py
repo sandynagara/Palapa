@@ -9,8 +9,8 @@ from qgis.core import QgsProject
 from qgis.PyQt.QtWidgets import QFileDialog
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QThreadPool
 
-from requests import HTTPError
-
+from ..publish.geoserver import Geoserver
+from ..publish.worker import CheckConnectionWorker
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -36,13 +36,28 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         self.simpulJaringan=None
         self.grup = None
         self.user=None
+        self.pathSLD = None
         self.radioButton_StyleBrowse.toggled.connect(self.browse_style.setEnabled)
         self.radioButton_StyleBrowse.toggled.connect(self.lineEdit_style.setEnabled)
+
+        self.threadpool = QThreadPool()
+        self.check_worker = None
+    
+    def printError(self, ex):
+        QgsMessageLog.logMessage(message=str(ex), tag='SimpleWebGis', level=Qgis.Critical)
 
     # Connection Test Tab1 
     def connectionValuesChanged(self):
         self.label_status.setText('')
         self.label_status.setStyleSheet("")       
+
+    def connectionStatus(self, err_status):
+        if err_status:
+            self.label_status.setStyleSheet("background-color: rgb(255, 0, 0)")
+            self.label_status.setText(err_status)
+        else:
+            self.label_status.setStyleSheet("background-color: lightgreen")
+            self.label_status.setText('Terhubung')
 
     def runConnectionTest(self):
         # Clean label
@@ -57,53 +72,27 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         login_json = json.dumps(login_payload)
         login_api = '/api/login'
         url = url_login+login_api
-
-        try:
-            response_API = requests.post(url, data = login_json)
-            responseApiJson = json.loads(response_API.text)
-            print(response_API.text)
-            if response_API.status_code == 200:
-                status = responseApiJson['MSG']
-                if status == 'Valid Info':             
-                    self.label_status.setStyleSheet("color: white; background-color: #4AA252; border-radius: 4px;")
-                    self.label_status.setText('Terhubung')
-                    self.label_status2.setText('')
-                    if(responseApiJson['Result']):
-                        self.grup = responseApiJson['grup']
-                        self.user = responseApiJson['user']
-                        self.url = url_login
-                        responseSimpul = requests.get(self.url+'/api/sisteminfo')
-                        responseSimpul = json.loads(responseSimpul.text)
-                        self.simpulJaringan = responseSimpul['kodesimpul'].split(",")[0]
-                        self.upload.setEnabled(True)
-                    print(responseApiJson)
-                else:
-                    self.label_status.setStyleSheet("color: white; background-color: #C4392A; border-radius: 4px;")
-                    self.label_status.setText(status)
-                    self.label_status2.setText('Hubungkan terlebih dahulu')
-                    self.upload.setEnabled(False)
-            else:
-                self.label_status.setText("CEK!!")
-                self.label_status2.setText('Hubungkan terlebih dahulu')
-                self.upload.setEnabled(False)             
-        except Exception as err:
-            print(err)
-            self.label_status.setStyleSheet("color: white; background-color: #C4392A; border-radius: 4px;")
-            self.label_status.setText('Cek URL atau koneksi internet Anda')
-            self.label_status2.setText('Hubungkan terlebih dahulu')
-            self.upload.setEnabled(False)          
-
+        response_API = requests.post(url, data = login_json)
+        responseApiJson = json.loads(response_API.text)
+        if(responseApiJson['Result']):
+            self.grup = responseApiJson['grup']
+            self.user = responseApiJson['user']
+            self.url = url_login
+            responseSimpul = requests.get(self.url+'/api/sisteminfo')
+            responseSimpul = json.loads(responseSimpul.text)
+            self.simpulJaringan = responseSimpul['kodesimpul'].split(",")[0]
+            self.upload.setEnabled(True)
+        print(responseApiJson)
 
     #Upload Tab2
     def uploadFile(self):
         layerPath = self.exportLayer()
-       
         if self.checkFileExist(layerPath['shp']) and self.checkFileExist(layerPath['dbf']) and self.checkFileExist(layerPath['shx']) and self.checkFileExist(layerPath['prj']) :
             print("file Lengkap")
             if(self.radioButton_StyleQgis.isChecked()):
                 sldPath = self.exportSld()
             else:
-                sldPath = self.start_browse_style()
+                sldPath = self.pathSLD
             filesSld = {'file': open(sldPath,'rb')}
             params = {"USER":self.user,"GRUP":self.grup,"KODESIMPUL":self.simpulJaringan}
             urlSld = self.url+"/api/styles/add"
@@ -202,6 +191,6 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         filePath, _ = QFileDialog.getOpenFileName(None, "Import SLD", "",filter)
         print(filePath)
         self.lineEdit_style.setText(filePath)
-        return filePath
+        self.pathSLD = filePath
 
 
