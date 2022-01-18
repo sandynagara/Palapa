@@ -181,7 +181,6 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         layer.saveSldStyle(path)
         return path
     
-
     def start_browse_metadata(self):
         filter = "XML files (*.xml)"
         filename1, _ = QFileDialog.getOpenFileName(None, "Import XML", "",filter)
