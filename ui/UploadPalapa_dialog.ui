@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>StylePalapaDialogBase</class>
  <widget class="QDialog" name="StylePalapaDialogBase">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -175,11 +178,14 @@
               <property name="minimumSize">
                <size>
                 <width>0</width>
-                <height>30</height>
+                <height>25</height>
                </size>
               </property>
+              <property name="text">
+               <string/>
+              </property>
               <property name="placeholderText">
-               <string>URL</string>
+               <string>Contoh: http://geoportal.jogjakota.go.id</string>
               </property>
               <property name="clearButtonEnabled">
                <bool>true</bool>
@@ -221,7 +227,7 @@
               <property name="minimumSize">
                <size>
                 <width>0</width>
-                <height>30</height>
+                <height>25</height>
                </size>
               </property>
               <property name="placeholderText">
@@ -261,7 +267,7 @@
               <property name="minimumSize">
                <size>
                 <width>0</width>
-                <height>30</height>
+                <height>25</height>
                </size>
               </property>
               <property name="echoMode">
@@ -301,11 +307,21 @@
                 <height>25</height>
                </size>
               </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: white;
+border-radius: 4px;</string>
+              </property>
               <property name="text">
                <string/>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
+              </property>
+              <property name="margin">
+               <number>10</number>
+              </property>
+              <property name="indent">
+               <number>10</number>
               </property>
              </widget>
             </item>
@@ -354,7 +370,7 @@ color:white
 </string>
               </property>
               <property name="text">
-               <string>Tes Koneksi</string>
+               <string>Hubungkan</string>
               </property>
              </widget>
             </item>
@@ -643,8 +659,6 @@ color:white
               </property>
               <property name="styleSheet">
                <string notr="true">QPushButton {
-color:white;
-background-color:rgb(1, 125, 197);
 border:0px;
 border-radius: 4px;
 padding: 4px;
@@ -652,13 +666,18 @@ font-size: 14px;
 height:25px;
 width:140px;
 }
-QPushButton:hover
-{
-background-color:rgb(21, 50, 92);
-color:white
-
+QPushButton:disabled {
+background-color:#cccccc;
+color:#969696;
 }
-</string>
+QPushButton:enabled {
+color:white;
+background-color:rgb(1, 125, 197);
+}
+QPushButton:hover {
+background-color:rgb(21, 50, 92);
+color:white;
+}</string>
               </property>
               <property name="text">
                <string>Unggah</string>
@@ -666,6 +685,21 @@ color:white
              </widget>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_status2">
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Hubungkan terlebih dahulu</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

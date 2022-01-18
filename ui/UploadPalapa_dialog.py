@@ -87,13 +87,12 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
     #Upload Tab2
     def uploadFile(self):
         layerPath = self.exportLayer()
-       
         if self.checkFileExist(layerPath['shp']) and self.checkFileExist(layerPath['dbf']) and self.checkFileExist(layerPath['shx']) and self.checkFileExist(layerPath['prj']) :
             print("file Lengkap")
             if(self.radioButton_StyleQgis.isChecked()):
                 sldPath = self.exportSld()
             else:
-                sldPath = self.start_browse_style()
+                sldPath = self.pathSLD
             filesSld = {'file': open(sldPath,'rb')}
             params = {"USER":self.user,"GRUP":self.grup,"KODESIMPUL":self.simpulJaringan}
             urlSld = self.url+"/api/styles/add"
@@ -194,7 +193,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         filePath, _ = QFileDialog.getOpenFileName(None, "Import SLD", "",filter)
         print(filePath)
         self.lineEdit_style.setText(filePath)
-        return filePath
+        self.pathSLD = filePath
 
     #upload Metadata
     def uploadMetadata(self, Lid) :
