@@ -36,7 +36,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         self.simpulJaringan=None
         self.grup = None
         self.user=None
-        self.pathSLD = None
+        self.pathMeta = None
         self.radioButton_StyleBrowse.toggled.connect(self.browse_style.setEnabled)
         self.radioButton_StyleBrowse.toggled.connect(self.lineEdit_style.setEnabled)
 
@@ -117,6 +117,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
             dataPublish = json.loads(responseAPIZip.text)
             print(dataPublish,"publish")
             self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
+            self.uploadMetadata(dataPublish['LID'])
 
             if(self.radioButton_StyleQgis.isChecked()):
                 filesSld['file'].close()
@@ -182,9 +183,10 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def start_browse_metadata(self):
         filter = "XML files (*.xml)"
-        filePath, _ = QFileDialog.getOpenFileName(None, "Import XML", "",filter)
-        print(filePath)
-        self.lineEdit_metadata.setText(filePath)
+        filename1, _ = QFileDialog.getOpenFileName(None, "Import XML", "",filter)
+        print(filename1)
+        self.lineEdit_metadata.setText(filename1)
+        self.pathMeta = filename1
 
     def start_browse_style(self):
         filter = "SLD files (*.sld)"
@@ -192,5 +194,21 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         print(filePath)
         self.lineEdit_style.setText(filePath)
         self.pathSLD = filePath
+
+    #upload Metadata
+    def uploadMetadata(self, Lid) :
+        metadataPath = self.pathMeta
+        filesMeta = {'file': open(metadataPath,'rb')}
+        params = {"akses":"PUBLIC","identifier":Lid,"KODESIMPUL":self.simpulJaringan}
+        urlMeta = self.url+"/api/meta/link"
+        responseAPIMeta = requests.post(urlMeta,files=filesMeta,params=params)
+        print (responseAPIMeta.text)
+        return responseAPIMeta.text
+        
+        
+        #if self.checkMetadataExist(metadataPath['xml']) :
+            #print("metadata lengkap")
+    
+  
 
 
