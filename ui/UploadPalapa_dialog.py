@@ -97,6 +97,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
             params = {"USER":self.user,"GRUP":self.grup,"KODESIMPUL":self.simpulJaringan}
             urlSld = self.url+"/api/styles/add"
             responseAPISld = requests.post(urlSld,files=filesSld,params=params)
+            print(responseAPISld.text)
             zipShp = ZipFile(f"{layerPath['shp'].split('.')[0]}"+'.zip', 'w')
 
             # Add multiple files to the zip
@@ -107,6 +108,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
             zipShp.write(f"{layerPath['prj']}",os.path.basename(layerPath['prj']))
             # close the Zip File
             zipShp.close()
+            
             files = {'file': open(f"{layerPath['shp'].split('.')[0]}"+'.zip','rb')}
             print(files)
             
@@ -121,29 +123,6 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
                 os.remove(sldPath)
             files['file'].close() 
             os.remove(layerPath['shp'].split('.')[0]+'.zip')
-
-            # filesShp = {'file': open(layerPath['shp'],'rb')}
-            # filesDbf = {'file': open(layerPath['dbf'],'rb')}
-            # filesShx = {'file': open(layerPath['shx'],'rb')}
-            # filesPrj = {'file': open(layerPath['prj'],'rb')}
-
-            # urlShp = self.url+"/api/uploadshp"
-            # urlDbf = self.url+"/api/uploaddbf"
-            # urlShx = self.url+"/api/uploadshx"
-            # urlPrj = self.url+"/api/uploadprj"
-      
-            # print(urlShp)
-
-            # responseAPIShp = requests.post(urlShp,files=filesShp,params=params)
-            # responseAPIDbf = requests.post(urlDbf,files=filesDbf,params=params)
-            # responseAPIShx = requests.post(urlShx,files=filesShx,params=params)
-            # responseAPIPrj = requests.post(urlPrj,files=filesPrj,params=params)
-       
-            # print(responseAPISld.text)
-            # print(responseAPIPrj.text)
-            # dataPublish = json.loads(responseAPIPrj.text)
-            # self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
-   
         else :
             print("file Tidak Lengkap")
     
@@ -160,15 +139,29 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         source = layer.source()
         source = source.split("|")
         try:
-            shp = source[0]
-            prj = source[0].replace(".shp", ".prj")
-            dbf = source[0].replace(".shp", ".dbf")
-            shx = source[0].replace(".shp", ".shx")
-            sourceFile = json.loads('{"shp":"%s","prj":"%s","dbf":"%s","shx":"%s","nama":"%s"}'%(shp,prj,dbf,shx,layerName))
+            tipe = source[0].split(".")[-1]
+            print(tipe,tipe=="shp")
+            if (tipe=="shp"):
+                sourceFile = self.replacePath(source[0],".shp")
+            elif (tipe=="dbf"):
+                sourceFile = self.replacePath(source[0],".dbf")
+            elif (tipe=="shx"):
+                sourceFile = self.replacePath(source[0],".shx")
+            print(sourceFile)
             return sourceFile
-        except:
-            return print("File Tidak ditemukan")
+        except Exception as e:
+            return print("File Tidak ditemukan",e)
    
+    def replacePath(self,source,tipeFile):
+        print(tipeFile)
+        shp = source.replace(tipeFile, ".shp")
+        prj = source.replace(tipeFile, ".prj")
+        dbf = source.replace(tipeFile, ".dbf")
+        shx = source.replace(tipeFile, ".shx")
+        sourceFile = json.loads('{"shp":"%s","prj":"%s","dbf":"%s","shx":"%s"}'%(shp,prj,dbf,shx))
+        print(sourceFile)
+        return sourceFile
+    
     def checkFileExist(self,filePath):
         fileExist = True
         if os.path.isfile(filePath):
@@ -188,14 +181,16 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
     
 
     def start_browse_metadata(self):
-        filename1, _ = QFileDialog.getOpenFileName()
-        print(filename1)
-        self.lineEdit_metadata.setText(filename1)
+        filter = "XML files (*.xml)"
+        filePath, _ = QFileDialog.getOpenFileName(None, "Import XML", "",filter)
+        print(filePath)
+        self.lineEdit_metadata.setText(filePath)
 
     def start_browse_style(self):
-        filename2, _ = QFileDialog.getOpenFileName()
-        print(filename2)
-        self.lineEdit_style.setText(filename2)
-        return filename2
+        filter = "SLD files (*.sld)"
+        filePath, _ = QFileDialog.getOpenFileName(None, "Import SLD", "",filter)
+        print(filePath)
+        self.lineEdit_style.setText(filePath)
+        return filePath
 
 
