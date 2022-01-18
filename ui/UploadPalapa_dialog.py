@@ -37,6 +37,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         self.grup = None
         self.user=None
         self.pathMeta = None
+        self.pathSLD = None
         self.radioButton_StyleBrowse.toggled.connect(self.browse_style.setEnabled)
         self.radioButton_StyleBrowse.toggled.connect(self.lineEdit_style.setEnabled)
 
