@@ -1,5 +1,6 @@
 import os
 import json
+from pickle import FALSE
 import requests
 from zipfile import ZipFile
 import codecs
@@ -128,8 +129,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
             dataPublish = json.loads(responseAPIZip.text)
             print(dataPublish,"publish")
             self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
-            self.uploadMetadata(dataPublish['LID'])
-
+            self.linkStyleShp(dataPublish['LID'],dataPublish['ID'])
             if(self.radioButton_StyleQgis.isChecked()):
                 filesSld['file'].close()
                 os.remove(sldPath)
@@ -167,6 +167,13 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         print(sourceFile)
         return sourceFile
      
+    def linkStyleShp(self,Lid,style):
+        url = self.url + "/api/layers/modify"
+        dataPublish = {"pubdata":{"id": Lid,"aktif":False, "tipe": "VECTOR","abstract":"","nativename":f"{self.grup}:{Lid}","style":style,"title":style}}
+        dataPublish = json.dumps(dataPublish)
+        print(dataPublish)
+        respond = requests.post(url,data=f"dataPublish={dataPublish}")
+        print(respond.text)
    
     def replacePath(self,source,tipeFile):
         print(tipeFile)
