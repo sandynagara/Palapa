@@ -2,12 +2,14 @@ import os
 import json
 import requests
 from zipfile import ZipFile
+import codecs
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.core import QgsProject
 from qgis.PyQt.QtWidgets import QFileDialog
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QThreadPool
+
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -96,6 +98,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
     #Upload Tab2
     def uploadFile(self):
         layerPath = self.exportLayer()
+      
         if self.checkFileExist(layerPath['shp']) and self.checkFileExist(layerPath['dbf']) and self.checkFileExist(layerPath['shx']) and self.checkFileExist(layerPath['prj']) :
             print("file Lengkap")
             if(self.radioButton_StyleQgis.isChecked()):
@@ -108,13 +111,12 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
             responseAPISld = requests.post(urlSld,files=filesSld,params=params)
             print(responseAPISld.text)
             zipShp = ZipFile(f"{layerPath['shp'].split('.')[0]}"+'.zip', 'w')
-
             # Add multiple files to the zip
             print(layerPath['shp'].split('.')[0].split('/')[-1])
-            zipShp.write(f"{layerPath['shp']}",os.path.basename(layerPath['shp']))
-            zipShp.write(f"{layerPath['dbf']}",os.path.basename(layerPath['dbf']))
-            zipShp.write(f"{layerPath['shx']}",os.path.basename(layerPath['shx']))
-            zipShp.write(f"{layerPath['prj']}",os.path.basename(layerPath['prj']))
+            zipShp.write(f"{layerPath['shp']}",os.path.basename(layerPath['shp']).replace(" ","_"))
+            zipShp.write(f"{layerPath['dbf']}",os.path.basename(layerPath['dbf']).replace(" ","_"))
+            zipShp.write(f"{layerPath['shx']}",os.path.basename(layerPath['shx']).replace(" ","_"))
+            zipShp.write(f"{layerPath['prj']}",os.path.basename(layerPath['prj']).replace(" ","_"))
             # close the Zip File
             zipShp.close()
             
@@ -147,27 +149,36 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         layerName = self.select_layer.currentText()
         layer = QgsProject().instance().mapLayersByName(layerName)[0]
         source = layer.source()
+  
         source = source.split("|")
-        try:
-            tipe = source[0].split(".")[-1]
-            print(tipe,tipe=="shp")
-            if (tipe=="shp"):
-                sourceFile = self.replacePath(source[0],".shp")
-            elif (tipe=="dbf"):
-                sourceFile = self.replacePath(source[0],".dbf")
-            elif (tipe=="shx"):
-                sourceFile = self.replacePath(source[0],".shx")
+        print(source[0])
+        EPSGLayer = layer.crs().authid()
+  
+        tipe = source[0].split(".")[-1]
+        print(tipe,tipe=="shp")
+        if (tipe=="shp"):
+            print(source[0])
+            sourceFile = self.replacePath(source[0],".shp")
             print(sourceFile)
-            return sourceFile
-        except Exception as e:
-            return print("File Tidak ditemukan",e)
+        elif (tipe=="dbf"):
+            sourceFile = self.replacePath(source[0],".dbf")
+        elif (tipe=="shx"):
+            sourceFile = self.replacePath(source[0],".shx")
+        print(sourceFile)
+        return sourceFile
+     
    
     def replacePath(self,source,tipeFile):
         print(tipeFile)
         shp = source.replace(tipeFile, ".shp")
+        shp = shp.replace("\\", "/")
         prj = source.replace(tipeFile, ".prj")
+        prj = prj.replace("\\", "/")
         dbf = source.replace(tipeFile, ".dbf")
+        dbf = dbf.replace("\\", "/")
         shx = source.replace(tipeFile, ".shx")
+        shx = shx.replace("\\", "/")
+        print(shp,prj,dbf,shx)
         sourceFile = json.loads('{"shp":"%s","prj":"%s","dbf":"%s","shx":"%s"}'%(shp,prj,dbf,shx))
         print(sourceFile)
         return sourceFile
@@ -212,7 +223,6 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         responseAPIMeta = requests.post(urlMeta,files=filesMeta,params=params)
         print (responseAPIMeta.text)
         return responseAPIMeta.text
-        
         
         #if self.checkMetadataExist(metadataPath['xml']) :
             #print("metadata lengkap")
