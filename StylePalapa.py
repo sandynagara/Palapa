@@ -28,7 +28,7 @@ from qgis.PyQt.QtWidgets import QAction
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
-from .UploadPalapa_dialog import PalapaDialog
+from .ui.UploadPalapa_dialog import PalapaDialog
 import os.path
 
 

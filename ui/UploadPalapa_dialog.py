@@ -36,8 +36,6 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         self.pathMeta = None
         self.pathSLD = None
         self.lineEdit_metadata.setReadOnly(True)
-        self.pathSLD = ''
-        self.pathMeta = ''
         self.lineEdit_style.setReadOnly(True)
         self.radioButton_StyleBrowse.toggled.connect(self.browse_style.setEnabled)
         self.radioButton_StyleBrowse.toggled.connect(self.lineEdit_style.setEnabled)
@@ -151,7 +149,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
             self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
             
             #metadata
-            if (self.pathMeta != ''):
+            if (self.pathMeta != None or self.pathMeta != ''):
                 #if (self.attachMetadata == True) :
                 print('upload meta jalan')         
                 self.uploadMetadata(dataPublish['LID'])
@@ -168,13 +166,13 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         #self.attachStyle = False
         self.lineEdit_style.setText('')
         self.filename1 = ''
-        self.pathSLD = ''
+        self.pathSLD = None
 
     def clearMetadata(self):
         #self.attachMetadata = False
         self.lineEdit_metadata.setText('')
         self.filename1 = ''
-        self.pathMeta = ''
+        self.pathMeta = None
 
     def publish(self,kodeEpsg,Lid,Tipe,id):
         url = self.url + "/api/publish"
