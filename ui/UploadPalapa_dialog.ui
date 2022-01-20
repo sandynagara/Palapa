@@ -10,13 +10,13 @@
     <x>0</x>
     <y>0</y>
     <width>700</width>
-    <height>616</height>
+    <height>650</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>700</width>
-    <height>616</height>
+    <height>650</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -55,7 +55,7 @@
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">image: url(:/plugins/StylePalapa/420px-Badan_Informasi_Geospasial_logo.png);</string>
+        <string notr="true">image: url(:img/420px-Badan_Informasi_Geospasial_logo.png);</string>
        </property>
        <property name="text">
         <string/>
@@ -308,8 +308,7 @@
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: white;
-border-radius: 4px;</string>
+               <string notr="true">border-radius: 4px;</string>
               </property>
               <property name="text">
                <string/>
@@ -524,6 +523,27 @@ color:white
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="pushButton_clearStyle">
+              <property name="maximumSize">
+               <size>
+                <width>20</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton {
+image: url(:/img/cross_icon.png);
+image-width:25px;
+image-height:25px;
+background:transparent;
+}</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="browse_style">
               <property name="enabled">
                <bool>false</bool>
@@ -590,6 +610,27 @@ color:white
               </property>
               <property name="placeholderText">
                <string>[optional]</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_clearMetadata">
+              <property name="maximumSize">
+               <size>
+                <width>20</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton {
+image: url(:/img/cross_icon.png);
+image-width:25px;
+image-height:25px;
+background:transparent;
+}</string>
+              </property>
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
@@ -705,22 +746,102 @@ color:white;
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
+        <widget class="QLabel" name="label_statusSLD">
+         <property name="minimumSize">
           <size>
-           <width>20</width>
-           <height>40</height>
+           <width>0</width>
+           <height>20</height>
           </size>
          </property>
-        </spacer>
+         <property name="styleSheet">
+          <string notr="true">border-radius: 4px;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+         <property name="margin">
+          <number>5</number>
+         </property>
+         <property name="indent">
+          <number>5</number>
+         </property>
+        </widget>
        </item>
        <item>
-        <widget class="QProgressBar" name="progressBar">
-         <property name="value">
-          <number>0</number>
+        <widget class="QLabel" name="label_statusLayer">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border-radius: 4px;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+         <property name="margin">
+          <number>5</number>
+         </property>
+         <property name="indent">
+          <number>5</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_statusPublish">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border-radius: 4px;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+         <property name="margin">
+          <number>5</number>
+         </property>
+         <property name="indent">
+          <number>5</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_statusMetadata">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border-radius: 4px;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+         <property name="margin">
+          <number>5</number>
+         </property>
+         <property name="indent">
+          <number>5</number>
          </property>
         </widget>
        </item>
