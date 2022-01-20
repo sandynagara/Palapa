@@ -36,8 +36,8 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         self.pathMeta = None
         self.pathSLD = None
         self.lineEdit_metadata.setReadOnly(True)
-        self.attachStyle = False
-        self.attachMetadata = False
+        self.pathSLD = ''
+        self.pathMeta = ''
         self.lineEdit_style.setReadOnly(True)
         self.radioButton_StyleBrowse.toggled.connect(self.browse_style.setEnabled)
         self.radioButton_StyleBrowse.toggled.connect(self.lineEdit_style.setEnabled)
@@ -109,9 +109,10 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
             print("file Lengkap")
             if(self.radioButton_StyleQgis.isChecked()):
                 sldPath = self.exportSld()
-            elif(self.radioButton_StyleBrowse.isChecked() and self.attachStyle == True):    
+            elif(self.radioButton_StyleBrowse.isChecked() and self.pathSLD != ''):    
                 sldPath = self.pathSLD
             else:
+                self.report(self.label_statusSLD, 'caution', 'Masukkan SLD atau gunakan SLD bawaan')
                 print('masukkan SLD atau gunakan sld bawaan')
             filesSld = {'file': open(sldPath,'rb')}
             params = {"USER":self.user,"GRUP":self.grup,"KODESIMPUL":self.simpulJaringan}
@@ -142,10 +143,16 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
             responseAPIZip = requests.post(urlUpload,files=files,params=params)
             dataPublish = json.loads(responseAPIZip.text)
             print(dataPublish,"publish")
+            if(dataPublish['RTN'] == self.select_layer.currentText()+'.zip'):
+                self.report(self.label_statusLayer, True, 'Layer Berhasil diunggah! : '+dataPublish['MSG']+' ('+dataPublish['RTN']+')')
+            else:
+                self.report(self.label_statusLayer, False, 'Layer Gagal diunggah! : '+dataPublish['MSG'])            
+
             self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
             
             #metadata
-            if (self.attachMetadata == True) :
+            if (self.pathMeta != ''):
+                #if (self.attachMetadata == True) :
                 print('upload meta jalan')         
                 self.uploadMetadata(dataPublish['LID'])
             
@@ -158,14 +165,16 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
             print("file Tidak Lengkap")
 
     def clearStyle(self):
-        #self.uploadStyle = False
+        #self.attachStyle = False
         self.lineEdit_style.setText('')
         self.filename1 = ''
+        self.pathSLD = ''
 
     def clearMetadata(self):
-        self.attachMetadata = False
+        #self.attachMetadata = False
         self.lineEdit_metadata.setText('')
         self.filename1 = ''
+        self.pathMeta = ''
 
     def publish(self,kodeEpsg,Lid,Tipe,id):
         url = self.url + "/api/publish"
@@ -175,9 +184,9 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         print(respond.text)
         respondJSON = json.loads(respond.text)
         if(respondJSON['RTN']):
-            self.report(self.label_statusLayer, True, 'Layer Berhasil diunggah!')
+            self.report(self.label_statusPublish, True, 'Layer Berhasil dipublikasikan! : '+respondJSON['MSG'])
         else:
-            self.report(self.label_statusLayer, False, 'Layer Gagal diunggah! : '+respondJSON['MSG'])
+            self.report(self.label_statusPublish, False, 'Layer Gagal dipublikasikan! : '+respondJSON['MSG'])
       
     def exportLayer(self):
         layerName = self.select_layer.currentText()
@@ -232,15 +241,12 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         print(filename1)
         self.lineEdit_metadata.setText(filename1)
         self.pathMeta = filename1
-        self.attachMetadata = True
-
+        
     def start_browse_style(self):
-        #self.attachStyle = True
         filter = "SLD files (*.sld)"
         filePath, _ = QFileDialog.getOpenFileName(None, "Import SLD", "",filter)
         print(filePath)
         self.lineEdit_style.setText(filePath)
-        #self.pathSLD = self.lineEdit_style.text()
         self.pathSLD = filePath
 
     # upload Metadata
@@ -264,6 +270,8 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
             label.setStyleSheet("color: white; background-color: #4AA252; border-radius: 4px;") 
         elif result == 'reset':
             label.setStyleSheet("background-color: none; border-radius: 4px;")
+        elif result == 'caution':
+            label.setStyleSheet("color: white; background-color: #F28F1E; border-radius: 4px;")
         else :
             label.setStyleSheet("color: white; background-color: #C4392A; border-radius: 4px;")
         label.setText(message)
