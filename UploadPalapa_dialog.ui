@@ -10,13 +10,13 @@
     <x>0</x>
     <y>0</y>
     <width>700</width>
-    <height>650</height>
+    <height>660</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>700</width>
-    <height>650</height>
+    <height>660</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -55,7 +55,7 @@
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">image: url(:img/420px-Badan_Informasi_Geospasial_logo.png);</string>
+        <string notr="true">image: url(:/plugins/StylePalapa/420px-Badan_Informasi_Geospasial_logo.png);</string>
        </property>
        <property name="text">
         <string/>
@@ -530,16 +530,8 @@ color:white
                 <height>16777215</height>
                </size>
               </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton {
-image: url(:/img/cross_icon.png);
-image-width:25px;
-image-height:25px;
-background:transparent;
-}</string>
-              </property>
               <property name="text">
-               <string/>
+               <string>X</string>
               </property>
              </widget>
             </item>
@@ -621,16 +613,8 @@ background:transparent;
                 <height>16777215</height>
                </size>
               </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton {
-image: url(:/img/cross_icon.png);
-image-width:25px;
-image-height:25px;
-background:transparent;
-}</string>
-              </property>
               <property name="text">
-               <string/>
+               <string>X</string>
               </property>
              </widget>
             </item>
@@ -750,7 +734,7 @@ color:white;
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>20</height>
+           <height>25</height>
           </size>
          </property>
          <property name="styleSheet">
@@ -775,7 +759,7 @@ color:white;
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>20</height>
+           <height>25</height>
           </size>
          </property>
          <property name="styleSheet">
@@ -800,7 +784,7 @@ color:white;
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>20</height>
+           <height>25</height>
           </size>
          </property>
          <property name="styleSheet">
@@ -825,7 +809,7 @@ color:white;
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>20</height>
+           <height>25</height>
           </size>
          </property>
          <property name="styleSheet">

@@ -1,7 +1,6 @@
 <RCC>
-  <qresource prefix="img">
-    <file>icon.png</file>
+  <qresource prefix="/plugins/StylePalapa">
     <file>420px-Badan_Informasi_Geospasial_logo.png</file>
-    <file>cross_icon.png</file>
+    <file>icon.png</file>
   </qresource>
 </RCC>
