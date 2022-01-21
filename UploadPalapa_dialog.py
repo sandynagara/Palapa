@@ -9,7 +9,6 @@ from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.core import QgsProject
 from qgis.PyQt.QtWidgets import QFileDialog
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QThreadPool
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -104,7 +103,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
     #Upload Tab2
     def uploadFile(self):
         self.reportReset()
-        if((self.radioButton_StyleBrowse.isChecked and self.pathSLD == '') or (self.radioButton_StyleBrowse.isChecked and self.pathSLD == None)):
+        if((self.radioButton_StyleBrowse.isChecked() and self.pathSLD == '') or (self.radioButton_StyleBrowse.isChecked() and self.pathSLD == None)):
             self.report(self.label_statusSLD, 'caution', 'Masukkan SLD atau gunakan SLD bawaan')
             print('masukkan SLD atau gunakan sld bawaan')
         else:
@@ -152,8 +151,8 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
                     self.report(self.label_statusLayer, False, 'Layer Gagal diunggah! : '+dataPublish['MSG'])            
                 
                 #metadata
-                if (self.pathMeta != None or self.pathMeta != ''):
-                    print('upload meta jalan')         
+                if (self.pathMeta is not None and self.pathMeta != ''):
+                    print('upload meta jalan',self.pathMeta)         
                     self.uploadMetadata(dataPublish['LID'])
                 
                 if (self.radioButton_StyleQgis.isChecked()):
@@ -193,27 +192,21 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         source = layer.source()
   
         source = source.split("|")
-        print(source[0])
         EPSGLayer = layer.crs().authid()
   
         tipe = source[0].split(".")[-1]
-        print(tipe,tipe=="shp")
         if (tipe=="shp"):
-            print(source[0])
             sourceFile = self.replacePath(source[0],".shp")
-            print(sourceFile)
         elif (tipe=="dbf"):
             sourceFile = self.replacePath(source[0],".dbf")
         elif (tipe=="shx"):
             sourceFile = self.replacePath(source[0],".shx")
-        print(sourceFile)
         return sourceFile
 
     def linkStyleShp(self,Lid,style):
         url = self.url + "/api/layers/modify"
         dataPublish = {"pubdata":{"id": Lid,"aktif":False, "tipe": "VECTOR","abstract":"","nativename":f"{self.grup}:{Lid}","style":style,"title":style}}
         dataPublish = json.dumps(dataPublish)
-        print(dataPublish)
         respond = requests.post(url,data=f"dataPublish={dataPublish}")
         print(respond.text)        
    
@@ -227,7 +220,6 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         dbf = dbf.replace("\\", "/")
         shx = source.replace(tipeFile, ".shx")
         shx = shx.replace("\\", "/")
-        print(shp,prj,dbf,shx)
         sourceFile = json.loads('{"shp":"%s","prj":"%s","dbf":"%s","shx":"%s"}'%(shp,prj,dbf,shx))
         print(sourceFile)
         return sourceFile
@@ -245,9 +237,18 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
     def exportSld(self):
         layerName = self.select_layer.currentText()
         layer = QgsProject().instance().mapLayersByName(layerName)[0]
-        path = f'D:/{layerName}.sld'
-        layer.saveSldStyle(path)
-        return path
+        source = layer.source()
+        source = source.split("|")[0]
+        tipe = source.split(".")[-1]
+        if(tipe=="shp"):
+            sldPath = source.replace(".shp", ".sld")
+        elif(tipe=="shx"):
+            sldPath = source.replace(".shx", ".sld")
+        elif(tipe=="dbf"):
+            sldPath = source.replace(".dbf", ".sld")
+        sldPath = sldPath.replace("\\", "/")
+        layer.saveSldStyle(sldPath)
+        return sldPath
     
 
     def start_browse_metadata(self):
