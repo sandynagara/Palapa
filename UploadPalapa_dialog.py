@@ -11,11 +11,15 @@ from qgis.PyQt import QtWidgets
 from qgis.core import QgsProject
 from qgis.PyQt.QtWidgets import QFileDialog
 
+from PyQt5.QtCore import QThread, pyqtSignal
+
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'UploadPalapa_dialog.ui'))
 
 class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
+
+    testing = pyqtSignal()
     
     def __init__(self, parent=None):
         """Constructor."""
@@ -58,6 +62,8 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         self.connectionValuesChanged()
 
         # login
+        self.testing.emit()
+
         url_login=self.lineEdit_url.text()
         user=self.lineEdit_username.text()
         password=self.lineEdit_password.text()
@@ -308,4 +314,5 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         self.report(self.label_statusSLD, 'reset', '')
         self.report(self.label_statusLayer, 'reset', '')
         self.report(self.label_statusMetadata, 'reset', '')
+        self.report(self.label_statusPublish, 'reset', '')
 
