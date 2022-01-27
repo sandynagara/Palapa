@@ -3,7 +3,8 @@ import json
 from pickle import FALSE
 import requests
 from zipfile import ZipFile
-import codecs
+
+from .SLDHandler import SLDDialog
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
@@ -20,6 +21,8 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         """Constructor."""
         super(PalapaDialog, self).__init__(parent)
         self.setupUi(self)
+        self.sld = SLDDialog(parent)
+        self.sld.testing.connect(self.tes)
         #Tab1
         self.QPushButton_test_connection.clicked.connect(self.runConnectionTest)
         self.lineEdit_username.textChanged.connect(self.connectionValuesChanged)
@@ -43,7 +46,8 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
         self.pushButton_clearStyle.clicked.connect(self.clearStyle)
         self.pushButton_clearMetadata.clicked.connect(self.clearMetadata)
         
-
+    def tes(self,text):
+        print("tes",text)
     # Connection Test Tab1 
     def connectionValuesChanged(self):
         self.label_status.setText('')
@@ -101,7 +105,7 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
 
 
     #Upload Tab2
-    def uploadFile(self):
+    def uploadFile(self,sld=None):
         self.reportReset()
         if((self.radioButton_StyleBrowse.isChecked() and self.pathSLD == '') or (self.radioButton_StyleBrowse.isChecked() and self.pathSLD == None)):
             self.report(self.label_statusSLD, 'caution', 'Masukkan SLD atau gunakan SLD bawaan')
@@ -110,59 +114,67 @@ class PalapaDialog(QtWidgets.QDialog, FORM_CLASS):
             layerPath = self.exportLayer()
             if self.checkFileExist(layerPath['shp']) and self.checkFileExist(layerPath['dbf']) and self.checkFileExist(layerPath['shx']) and self.checkFileExist(layerPath['prj']) :
                 print("file Lengkap")
-                if(self.radioButton_StyleQgis.isChecked()):
-                    sldPath = self.exportSld()
-                elif(self.radioButton_StyleBrowse.isChecked() and (self.pathSLD != '' or self.pathSLD != None)):    
-                    sldPath = self.pathSLD
-                filesSld = {'file': open(sldPath,'rb')}
-                params = {"USER":self.user,"GRUP":self.grup,"KODESIMPUL":self.simpulJaringan}
-                urlSld = self.url+"/api/styles/add"
-                responseAPISld = requests.post(urlSld,files=filesSld,params=params)
-                print(responseAPISld.text)
-                print(filesSld)
-                responseAPISldJSON = json.loads(responseAPISld.text)
-                if(responseAPISldJSON['MSG'] == 'Upload Success!'):
-                    self.report(self.label_statusSLD, True, 'SLD Berhasil diunggah! ('+ responseAPISldJSON['RTN']+')')
-                else:
-                    self.report(self.label_statusSLD, False, 'SLD Gagal diunggah! : '+responseAPISldJSON['MSG'] +' ('+ responseAPISldJSON['RTN']+')')
+                if (sld==None):
+                    self.uploadStyle()
                 zipShp = ZipFile(f"{layerPath['shp'].split('.')[0]}"+'.zip', 'w')
 
-                # Add multiple files to the zip
-                print(layerPath['shp'].split('.')[0].split('/')[-1])
-                zipShp.write(f"{layerPath['shp']}",os.path.basename(layerPath['shp']).replace(" ","_"))
-                zipShp.write(f"{layerPath['dbf']}",os.path.basename(layerPath['dbf']).replace(" ","_"))
-                zipShp.write(f"{layerPath['shx']}",os.path.basename(layerPath['shx']).replace(" ","_"))
-                zipShp.write(f"{layerPath['prj']}",os.path.basename(layerPath['prj']).replace(" ","_"))
-                # close the Zip File
-                zipShp.close()
+                # # Add multiple files to the zip
+                # print(layerPath['shp'].split('.')[0].split('/')[-1])
+                # zipShp.write(f"{layerPath['shp']}",os.path.basename(layerPath['shp']).replace(" ","_"))
+                # zipShp.write(f"{layerPath['dbf']}",os.path.basename(layerPath['dbf']).replace(" ","_"))
+                # zipShp.write(f"{layerPath['shx']}",os.path.basename(layerPath['shx']).replace(" ","_"))
+                # zipShp.write(f"{layerPath['prj']}",os.path.basename(layerPath['prj']).replace(" ","_"))
+                # # close the Zip File
+                # zipShp.close()
                 
-                files = {'file': open(f"{layerPath['shp'].split('.')[0]}"+'.zip','rb')}
-                print(files)
+                # files = {'file': open(f"{layerPath['shp'].split('.')[0]}"+'.zip','rb')}
+                # print(files)
                 
-                urlUpload = self.url+"/api/upload"
-                responseAPIZip = requests.post(urlUpload,files=files,params=params)
-                dataPublish = json.loads(responseAPIZip.text)
-                print(dataPublish,"publish")
-                self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
-                self.linkStyleShp(dataPublish['LID'],dataPublish['ID'])
-                if(dataPublish['RTN'] == self.select_layer.currentText()+'.zip'):
-                    self.report(self.label_statusLayer, True, 'Layer Berhasil diunggah! : '+dataPublish['MSG']+' ('+dataPublish['RTN']+')')
-                else:
-                    self.report(self.label_statusLayer, False, 'Layer Gagal diunggah! : '+dataPublish['MSG'])            
+                # urlUpload = self.url+"/api/upload"
+                # responseAPIZip = requests.post(urlUpload,files=files,params=params)
+                # dataPublish = json.loads(responseAPIZip.text)
+                # print(dataPublish,"publish")
+                # self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
+                # self.linkStyleShp(dataPublish['LID'],dataPublish['ID'])
+                # if(dataPublish['RTN'] == self.select_layer.currentText()+'.zip'):
+                #     self.report(self.label_statusLayer, True, 'Layer Berhasil diunggah! : '+dataPublish['MSG']+' ('+dataPublish['RTN']+')')
+                # else:
+                #     self.report(self.label_statusLayer, False, 'Layer Gagal diunggah! : '+dataPublish['MSG'])            
                 
-                #metadata
-                if (self.pathMeta is not None and self.pathMeta != ''):
-                    print('upload meta jalan',self.pathMeta)         
-                    self.uploadMetadata(dataPublish['LID'])
+                # #metadata
+                # if (self.pathMeta is not None and self.pathMeta != ''):
+                #     print('upload meta jalan',self.pathMeta)         
+                #     self.uploadMetadata(dataPublish['LID'])
                 
-                if (self.radioButton_StyleQgis.isChecked()):
-                    filesSld['file'].close()
-                    os.remove(sldPath)
-                files['file'].close() 
-                os.remove(layerPath['shp'].split('.')[0]+'.zip')
+                # if (self.radioButton_StyleQgis.isChecked()):
+                #     filesSld['file'].close()
+                #     os.remove(sldPath)
+                # files['file'].close() 
+                # os.remove(layerPath['shp'].split('.')[0]+'.zip')
             else :
                 print("file Tidak Lengkap")
 
+    def uploadStyle(self):
+        if(self.radioButton_StyleQgis.isChecked()):
+            self.pathSLD = self.exportSld()
+        elif(self.radioButton_StyleBrowse.isChecked() and (self.pathSLD != '' or self.pathSLD != None)):    
+            self.pathSLD = self.pathSLD
+        filesSld = {'file': open(self.pathSLD,'rb')}
+        params = {"USER":self.user,"GRUP":self.grup,"KODESIMPUL":self.simpulJaringan}
+        urlSld = self.url+"/api/styles/add"
+        responseAPISld = requests.post(urlSld,files=filesSld,params=params)
+        print(responseAPISld.text)
+        responseAPISldJSON = json.loads(responseAPISld.text)
+        if(responseAPISldJSON['MSG'] == 'Upload Success!'):
+            self.report(self.label_statusSLD, True, 'SLD Berhasil diunggah! ('+ responseAPISldJSON['RTN']+')')
+        else:
+            self.sld.panggil()
+            print(self.sld.SldName(self.pathSLD,self.user,self.grup,self.simpulJaringan,self.url))
+
+            self.report(self.label_statusSLD, False, 'SLD Gagal diunggah! : '+responseAPISldJSON['MSG'] +' ('+ responseAPISldJSON['RTN']+')')    
+
+    def renameSld(self):
+        print(self.sld.SldName(self.pathSLD,self.user,self.grup,self.simpulJaringan,self.url))
 
     def clearStyle(self):
         self.lineEdit_style.setText('')
