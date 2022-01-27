@@ -12,9 +12,6 @@ from qgis.PyQt.QtWidgets import QFileDialog
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from .upload import UploadDialog
-
-
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'UploadPalapa_login.ui'))
@@ -31,9 +28,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         self.QPushButton_test_connection.clicked.connect(self.runConnectionTest)
         self.lineEdit_username.textChanged.connect(self.connectionValuesChanged)
         self.lineEdit_password.textChanged.connect(self.connectionValuesChanged)
-        self.lineEdit_url.textChanged.connect(self.connectionValuesChanged)
-        
-        self.dlg = UploadDialog(parent)        
+        self.lineEdit_url.textChanged.connect(self.connectionValuesChanged)      
 
     # Connection Test Tab1 
     def connectionValuesChanged(self):
@@ -71,12 +66,11 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                         responseSimpul = json.loads(responseSimpul.text)
                         self.simpulJaringan = responseSimpul['kodesimpul'].split(",")[0]
 
-                        #signalsend = {"grup": self.grup, "user": self.user, "url": self.url, "kodesimpul": self.simpulJaringan}
-                        #self.UserSignal.emit(signalsend)
-                        #print(signalsend)
 
+                        signalsend = {"grup": self.grup, "user": self.user, "url": self.url, "kodesimpul": self.simpulJaringan}
+                        self.UserSignal.emit(signalsend)
                         self.close()
-                        self.dlg.show()
+                        print(signalsend)
 
                     print(responseApiJson)
                 else:

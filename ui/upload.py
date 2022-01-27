@@ -9,6 +9,7 @@ from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.core import QgsProject
 from qgis.PyQt.QtWidgets import QFileDialog
+from .login import LoginDialog
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
@@ -24,7 +25,8 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         """Constructor."""
         super(UploadDialog, self).__init__(parent)
         self.setupUi(self)
-
+        self.login = LoginDialog()
+        # self.login.UserSignal.connect(self.UserParam)
         self.upload.setEnabled(True)
         self.upload.clicked.connect(self.uploadFile)
         self.browse_metadata.clicked.connect(self.start_browse_metadata)
@@ -41,16 +43,18 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.radioButton_StyleBrowse.toggled.connect(self.lineEdit_style.setEnabled)
         self.pushButton_clearStyle.clicked.connect(self.clearStyle)
         self.pushButton_clearMetadata.clicked.connect(self.clearMetadata)
+        self.label_logout.mousePressEvent.connect(self.logout)
 
         #self.LoginDialog = LoginDialog
         #self.LoginDialog.UserSignal.connect(self.UserParam)
 
     def UserParam(self, signalpayload):
-        print('signal nangkep')
+        print('signal nangkep',signalpayload)
         self.grup = signalpayload['grup']
         self.user = signalpayload['user']
-        self.url = signalpayload['login']
+        self.url = signalpayload['url']
         self.simpulJaringan = signalpayload['kodesimpul']
+        self.label_userdesc.setText(f"Anda masuk sebagai {self.user} pada {self.url}")
         print(signalpayload)
     
     def logout(self):
@@ -60,7 +64,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
     def uploadFile(self):
         self.reportReset()
         if((self.radioButton_StyleBrowse.isChecked() and self.pathSLD == '') or (self.radioButton_StyleBrowse.isChecked() and self.pathSLD == None)):
-            self.report(self.label_statusSLD, 'caution', 'Masukkan SLD atau gunakan SLD bawaan')
+            # self.report(self.label_statusSLD, 'caution', 'Masukkan SLD atau gunakan SLD bawaan')
             print('masukkan SLD atau gunakan sld bawaan')
         else:
             layerPath = self.exportLayer()
@@ -77,10 +81,10 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
                 print(responseAPISld.text)
                 print(filesSld)
                 responseAPISldJSON = json.loads(responseAPISld.text)
-                if(responseAPISldJSON['MSG'] == 'Upload Success!'):
-                    self.report(self.label_statusSLD, True, 'SLD Berhasil diunggah! ('+ responseAPISldJSON['RTN']+')')
-                else:
-                    self.report(self.label_statusSLD, False, 'SLD Gagal diunggah! : '+responseAPISldJSON['MSG'] +' ('+ responseAPISldJSON['RTN']+')')
+                # if(responseAPISldJSON['MSG'] == 'Upload Success!'):
+                #     self.report(self.label_statusSLD, True, 'SLD Berhasil diunggah! ('+ responseAPISldJSON['RTN']+')')
+                # else:
+                #     self.report(self.label_statusSLD, False, 'SLD Gagal diunggah! : '+responseAPISldJSON['MSG'] +' ('+ responseAPISldJSON['RTN']+')')
                 zipShp = ZipFile(f"{layerPath['shp'].split('.')[0]}"+'.zip', 'w')
 
                 # Add multiple files to the zip
@@ -101,10 +105,10 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
                 print(dataPublish,"publish")
                 self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
                 self.linkStyleShp(dataPublish['LID'],dataPublish['ID'])
-                if(dataPublish['RTN'] == self.select_layer.currentText()+'.zip'):
-                    self.report(self.label_statusLayer, True, 'Layer Berhasil diunggah! : '+dataPublish['MSG']+' ('+dataPublish['RTN']+')')
-                else:
-                    self.report(self.label_statusLayer, False, 'Layer Gagal diunggah! : '+dataPublish['MSG'])            
+                # if(dataPublish['RTN'] == self.select_layer.currentText()+'.zip'):
+                #     self.report(self.label_statusLayer, True, 'Layer Berhasil diunggah! : '+dataPublish['MSG']+' ('+dataPublish['RTN']+')')
+                # else:
+                #     self.report(self.label_statusLayer, False, 'Layer Gagal diunggah! : '+dataPublish['MSG'])            
                 
                 #metadata
                 if (self.pathMeta is not None and self.pathMeta != ''):
@@ -137,10 +141,10 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         respond = requests.post(url,data=f"dataPublish={dataPublish}")
         print(respond.text)
         respondJSON = json.loads(respond.text)
-        if(respondJSON['RTN']):
-            self.report(self.label_statusPublish, True, 'Layer Berhasil dipublikasikan! : '+respondJSON['MSG'])
-        else:
-            self.report(self.label_statusPublish, False, 'Layer Gagal dipublikasikan! : '+respondJSON['MSG'])
+        # if(respondJSON['RTN']):
+        #     self.report(self.label_statusPublish, True, 'Layer Berhasil dipublikasikan! : '+respondJSON['MSG'])
+        # else:
+        #     self.report(self.label_statusPublish, False, 'Layer Gagal dipublikasikan! : '+respondJSON['MSG'])
       
     def exportLayer(self):
         layerName = self.select_layer.currentText()
@@ -231,10 +235,10 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         print (responseAPIMeta.text)
         #return responseAPIMeta.text
         responseAPIMetaJSON = json.loads(responseAPIMeta.text)
-        if(responseAPIMetaJSON['RTN']):
-            self.report(self.label_statusMetadata, True, 'Metadata berhasil diunggah!')
-        else:
-            self.report(self.label_statusMetadata, False, 'Metadata Gagal diunggah! : '+responseAPIMetaJSON['MSG'])
+        # if(responseAPIMetaJSON['RTN']):
+        #     self.report(self.label_statusMetadata, True, 'Metadata berhasil diunggah!')
+        # else:
+        #     self.report(self.label_statusMetadata, False, 'Metadata Gagal diunggah! : '+responseAPIMetaJSON['MSG'])
 
     # report upload
     def report(self, label, result, message):
