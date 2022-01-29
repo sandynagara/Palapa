@@ -13,6 +13,8 @@ from .login import LoginDialog
 from .SLDHandler import SLDDialog
 from .worker import Worker
 
+from .report import ReportDialog
+
 from PyQt5.QtCore import QThread, pyqtSignal
 
 #from .login import LoginDialog
@@ -31,7 +33,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
      
         # self.login.UserSignal.connect(self.UserParam)
         self.upload.setEnabled(True)
-        self.upload.clicked.connect(self.uploadFile)
+        self.upload.clicked.connect(self.checking)
         self.browse_metadata.clicked.connect(self.start_browse_metadata)
         self.browse_style.clicked.connect(self.start_browse_style)
         self.url = None
@@ -40,6 +42,12 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.user=None
         self.pathMeta = None
         self.pathSLD = None
+        self.MetaRun = False
+        self.pathSLD = None
+        self.UserParams = None
+        self.LayerParams = None
+        self.filesSld = None
+        self.SLDqgis = False
         self.lineEdit_metadata.setReadOnly(True)
         self.lineEdit_style.setReadOnly(True)
         self.radioButton_StyleBrowse.toggled.connect(self.browse_style.setEnabled)
@@ -47,6 +55,10 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.pushButton_clearStyle.clicked.connect(self.clearStyle)
         self.pushButton_clearMetadata.clicked.connect(self.clearMetadata)
         self.select_layer.currentTextChanged.connect(self.changeTitle)
+      
+
+
+        self.ReportDlg = ReportDialog()
         #self.LoginDialog = LoginDialog
         #self.LoginDialog.UserSignal.connect(self.UserParam)
 
@@ -93,133 +105,69 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
                 if (self.pathMeta is not None and self.pathMeta != ''):
                     print('metajalan',self.pathMeta)         
                     self.MetaRun = True
+                self.filesSld['file'].close()
                 self.runUpload()
             else :
                 print("file Tidak Lengkap")
 
-    def runUpload(self):
+    def runUpload(self,sldName=False):
         self.thread = QThread()
-        self.worker = Worker(self.UserParams, self.LayerParams, self.filesSld, self.SLDqgis, self.pathMeta, self.MetaRun)
+        title = self.lineEdit_layertitle.text()
+        abstrack = self.textEdit_layerabstract.toPlainText() 
+        tanggal = self.mDateTimeEdit.dateTime()
+        tanggal = tanggal.toString("ddd MMM dd yyyy HH:mm:ss")
+        keyword = self.comboBox_keyword.currentText()
+        akses = self.comboBox_constraint.currentText()
+
+        data = {"grup":self.grup,
+                "user":self.user,
+                "kodesimpul":self.simpulJaringan,
+                "url":self.url,
+                "title":title,
+                "abstrack":abstrack,
+                "layerPath":self.LayerParams,
+                "sldPath":self.filesSld['file'].name,
+                "sLDqgis":self.SLDqgis,
+                "pathMeta":self.pathMeta,
+                "MetaRun":self.MetaRun,
+                "date":tanggal,
+                "keyword":keyword,
+                "akses":akses}
+
+        self.worker = Worker(data,sldName)
+        self.worker.sldRename.connect(self.sldRename)
         self.worker.moveToThread(self.thread) # move Worker-Class to a thread
         # Connect signals and slots:
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
-        self.worker.status.connect(self.reportStatus)
-        self.worker.progress.connect(self.reportProgress)
+        # self.worker.status.connect(self.reportStatus)
+        # self.worker.progress.connect(self.reportProgress)
 
         self.thread.start() # finally start the thread
-        self.ReportDlg.show()
-        self.progressBar.setValue(0)
-        self.thread.finished.connect(self.reportFinish)
+        # self.ReportDlg.show()
+        # self.progressBar.setValue(0)
+        # self.thread.finished.connect(self.reportFinish)
         self.upload.setEnabled(False) # disable the start-upload button while thread is running
         self.thread.finished.connect(lambda: self.upload.setEnabled(True)) # enable the start-thread button when thread has been finished              
 
-    def uploadFile(self,sldName=False):
-        # self.reportReset()
-        if((self.radioButton_StyleBrowse.isChecked() and self.pathSLD == '') or (self.radioButton_StyleBrowse.isChecked() and self.pathSLD == None)):
-            # self.report(self.label_statusSLD, 'caution', 'Masukkan SLD atau gunakan SLD bawaan')
-            print('masukkan SLD atau gunakan sld bawaan')
-        else:
-            layerPath = self.exportLayer()
-            title = self.lineEdit_layertitle.text()
-            abstrack = self.textEdit_layerabstract.toPlainText() 
-            params = {"USER":self.user,"GRUP":self.grup,"KODESIMPUL":self.simpulJaringan}
-            if self.checkFileExist(layerPath['shp']) and self.checkFileExist(layerPath['dbf']) and self.checkFileExist(layerPath['shx']) and self.checkFileExist(layerPath['prj']) :
-                print("file Lengkap")
-                if(sldName==False):
-                    if(self.radioButton_StyleQgis.isChecked()):
-                        sldPath = self.exportSld()
-                    elif(self.radioButton_StyleBrowse.isChecked() and (self.pathSLD != '' or self.pathSLD != None)):    
-                        sldPath = self.pathSLD
-                    filesSld = {'file': open(sldPath,'rb')}
-                    urlSld = self.url+"/api/styles/add"
-                    responseAPISld = requests.post(urlSld,files=filesSld,params=params)
-                    print(filesSld)
-                    responseAPISldJSON = json.loads(responseAPISld.text)
-                    if(responseAPISldJSON['MSG'] == 'Upload Success!'):
-                        # self.report(self.label_statusSLD, True, 'SLD Berhasil diunggah! ('+ responseAPISldJSON['RTN']+')')
-                        dataPublish = self.uploadShp(layerPath,params)
-                        self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
+    # def reportProgress(self, val):
+    #     # self.report(self.label_statusbase, 'caution', f'Sedang diproses . . . ({val}/4))')
+    #     self.ReportDlg.progressBar.setValue(val/4*100)
+    
+    # def reportStatus(self, status):
+    #     self.ReportDlg.report(self.ReportDlg.label_statusMetadata, True, status)
 
-                        if (self.radioButton_StyleQgis.isChecked()):
-                            filesSld['file'].close()
-                            os.remove(sldPath)
+    # def reportFinish(self):
+    #     self.ReportDlg.report(self.ReportDlg.label_statusSLD, True, 'RAMPUNG!!!!!!!')
+    #     # self.report(self.label_statusbase, True, 'Proses Selesai')
 
-                        if (self.pathMeta is not None and self.pathMeta != ''):
-                            print('upload meta jalan',self.pathMeta)         
-                            self.uploadMetadata(dataPublish['LID'])
-                        else:
-                            self.minMeta(dataPublish['LID'],title,abstrack)
-
-                        self.linkStyleShp(dataPublish['LID'],dataPublish['ID'],title,abstrack)
-                        
-                    else:
-                        filesSld['file'].close()
-                        self.sldHandler = SLDDialog(self.user,self.grup,self.simpulJaringan,self.url,sldPath)
-                        self.sldHandler.uploadStyle.connect(self.uploadFile)
-                        self.sldHandler.show()
-                        # self.report(self.label_statusSLD, False, 'SLD Gagal diunggah! : '+responseAPISldJSON['MSG'] +' ('+ responseAPISldJSON['RTN']+')')
-                else:
-                    dataPublish = self.uploadShp(layerPath,params)
-                    self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'],abstrack)
-                    if (self.pathMeta is not None and self.pathMeta != ''):
-                        print('upload meta jalan',self.pathMeta)         
-                        self.uploadMetadata(dataPublish['LID'])
-                    else:
-                        self.minMeta(dataPublish['LID'],title,abstrack)
-                    self.linkStyleShp(dataPublish['LID'],sldName['nama'],title,abstrack)
-            
-                # if(dataPublish['RTN'] == self.select_layer.currentText()+'.zip'):
-                #     self.report(self.label_statusLayer, True, 'Layer Berhasil diunggah! : '+dataPublish['MSG']+' ('+dataPublish['RTN']+')')
-                # else:
-                #     self.report(self.label_statusLayer, False, 'Layer Gagal diunggah! : '+dataPublish['MSG'])            
-                
-                #metadata
-            else :
-                print("file Tidak Lengkap")
-
-    def minMeta(self,id,title,abstrack):
-        tanggal = self.mDateTimeEdit.dateTime()
-        tanggal = tanggal.toString("ddd MMM dd yyyy HH:mm:ss")
-        data = {"pubdata":{"WORKSPACE":self.grup,
-                "KEYWORD":self.comboBox_keyword.currentText(),
-                "AKSES":self.comboBox_constraint.currentText(),
-                "SELECTEDSIMPUL":self.simpulJaringan,
-                "TITLE":title,
-                "ID":id,
-                "ABSTRACT":abstrack,
-                "tanggal":tanggal}}
-        data = json.dumps(data)
-        print(data)
-        urlMinMeta = self.url+'/api/minmetadata'
-        responseAPIMeta = requests.post(urlMinMeta,data=f"dataPublish={data}")
-        print(responseAPIMeta.text)
-
-    def uploadShp(self,layerPath,params):
-        zipShp = ZipFile(f"{layerPath['shp'].split('.')[0]}"+'.zip', 'w')
-        # Add multiple files to the zip
-        print(layerPath['shp'].split('.')[0].split('/')[-1])
-        zipShp.write(f"{layerPath['shp']}",os.path.basename(layerPath['shp']).replace(" ","_"))
-        zipShp.write(f"{layerPath['dbf']}",os.path.basename(layerPath['dbf']).replace(" ","_"))
-        zipShp.write(f"{layerPath['shx']}",os.path.basename(layerPath['shx']).replace(" ","_"))
-        zipShp.write(f"{layerPath['prj']}",os.path.basename(layerPath['prj']).replace(" ","_"))
-        # close the Zip File
-        zipShp.close()
-        
-        files = {'file': open(f"{layerPath['shp'].split('.')[0]}"+'.zip','rb')}
-        
-        urlUpload = self.url+"/api/upload"
-        responseAPIZip = requests.post(urlUpload,files=files,params=params)
-        dataPublish = json.loads(responseAPIZip.text)
-
-        print(dataPublish,"data")
-
-        files['file'].close() 
-        os.remove(layerPath['shp'].split('.')[0]+'.zip')
-
-        return dataPublish
+    def sldRename(self,pathSld):
+        print("SLD Rename")
+        self.sldHandler = SLDDialog(self.user,self.grup,self.simpulJaringan,self.url,pathSld)
+        self.sldHandler.uploadStyle.connect(self.runUpload)
+        self.sldHandler.show()
 
     def clearStyle(self):
         self.lineEdit_style.setText('')
@@ -231,20 +179,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.filename1 = ''
         self.pathMeta = None
 
-    def publish(self,kodeEpsg,Lid,Tipe,id,abstack):
-        url = self.url + "/api/publish"
-        dataPublish = {"pubdata":{"LID": Lid, "TIPE": Tipe,"ID":id,"ABS":abstack,"SEPSG":kodeEpsg,"USER":self.user,"GRUP":self.grup}}
-        dataPublish = json.dumps(dataPublish)
-        respond = requests.post(url,data=f"dataPublish={dataPublish}")
-        print(respond.text)
-        respondJSON = json.loads(respond.text)
-
-        print(respondJSON,"publish")
-        # if(respondJSON['RTN']):
-        #     self.report(self.label_statusPublish, True, 'Layer Berhasil dipublikasikan! : '+respondJSON['MSG'])
-        # else:
-        #     self.report(self.label_statusPublish, False, 'Layer Gagal dipublikasikan! : '+respondJSON['MSG'])
-      
     def exportLayer(self):
         layerName = self.select_layer.currentText()
         layer = QgsProject().instance().mapLayersByName(layerName)[0]
@@ -261,13 +195,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
             sourceFile = self.replacePath(source[0],".shx")
         return sourceFile
 
-    def linkStyleShp(self,Lid,style,title,abstarck):
-        url = self.url + "/api/layers/modify"
-        dataPublish = {"pubdata":{"id": Lid,"aktif":False, "tipe": "VECTOR","abstract":abstarck,"nativename":f"{self.grup}:{Lid}","style":style,"title":title}}
-        dataPublish = json.dumps(dataPublish)
-        respond = requests.post(url,data=f"dataPublish={dataPublish}")
-        print(respond.text)        
-   
     def replacePath(self,source,tipeFile):
         print(tipeFile)
         shp = source.replace(tipeFile, ".shp")
@@ -308,7 +235,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         layer.saveSldStyle(sldPath)
         return sldPath
     
-
     def start_browse_metadata(self):
         filter = "XML files (*.xml)"
         filename1, _ = QFileDialog.getOpenFileName(None, "Import XML", "",filter)
@@ -323,20 +249,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.lineEdit_style.setText(filePath)
         self.pathSLD = filePath
 
-    # upload Metadata
-    def uploadMetadata(self, Lid) :
-        metadataPath = self.pathMeta
-        filesMeta = {'file': open(metadataPath,'rb')}
-        params = {"akses":"PUBLIC","identifier":Lid,"KODESIMPUL":self.simpulJaringan}
-        urlMeta = self.url+"/api/meta/link"
-        responseAPIMeta = requests.post(urlMeta,files=filesMeta,params=params)
-        print (responseAPIMeta.text)
-        #return responseAPIMeta.text
-        responseAPIMetaJSON = json.loads(responseAPIMeta.text)
-        # if(responseAPIMetaJSON['RTN']):
-        #     self.report(self.label_statusMetadata, True, 'Metadata berhasil diunggah!')
-        # else:
-        #     self.report(self.label_statusMetadata, False, 'Metadata Gagal diunggah! : '+responseAPIMetaJSON['MSG'])
 
     # report upload
     def report(self, label, result, message):
