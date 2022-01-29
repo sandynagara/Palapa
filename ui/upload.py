@@ -11,6 +11,7 @@ from qgis.core import QgsProject
 from qgis.PyQt.QtWidgets import QFileDialog
 from .login import LoginDialog
 from .SLDHandler import SLDDialog
+from .worker import Worker
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
@@ -70,6 +71,51 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.close()
 
     #Upload Tab2
+
+    def checking(self):
+        if((self.radioButton_StyleBrowse.isChecked() and self.pathSLD == '') or (self.radioButton_StyleBrowse.isChecked() and self.pathSLD == None)):
+            # self.report(self.label_statusbase, 'caution', 'Masukkan SLD atau gunakan SLD bawaan')
+            print('masukkan SLD atau gunakan sld bawaan')
+        else:
+            layerPath = self.exportLayer()
+            # define layer parameter
+            self.LayerParams = layerPath
+            if self.checkFileExist(layerPath['shp']) and self.checkFileExist(layerPath['dbf']) and self.checkFileExist(layerPath['shx']) and self.checkFileExist(layerPath['prj']) :
+                print("file Lengkap")
+                if(self.radioButton_StyleQgis.isChecked()):      
+                    self.SLDqgis = True              
+                    sldPath = self.exportSld()
+                elif(self.radioButton_StyleBrowse.isChecked() and (self.pathSLD != '' or self.pathSLD != None)):    
+                    sldPath = self.pathSLD
+                # define SLD parameter
+                self.filesSld = {'file': open(sldPath,'rb')}
+                print(self.filesSld)
+                if (self.pathMeta is not None and self.pathMeta != ''):
+                    print('metajalan',self.pathMeta)         
+                    self.MetaRun = True
+                self.runUpload()
+            else :
+                print("file Tidak Lengkap")
+
+    def runUpload(self):
+        self.thread = QThread()
+        self.worker = Worker(self.UserParams, self.LayerParams, self.filesSld, self.SLDqgis, self.pathMeta, self.MetaRun)
+        self.worker.moveToThread(self.thread) # move Worker-Class to a thread
+        # Connect signals and slots:
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.status.connect(self.reportStatus)
+        self.worker.progress.connect(self.reportProgress)
+
+        self.thread.start() # finally start the thread
+        self.ReportDlg.show()
+        self.progressBar.setValue(0)
+        self.thread.finished.connect(self.reportFinish)
+        self.upload.setEnabled(False) # disable the start-upload button while thread is running
+        self.thread.finished.connect(lambda: self.upload.setEnabled(True)) # enable the start-thread button when thread has been finished              
+
     def uploadFile(self,sldName=False):
         # self.reportReset()
         if((self.radioButton_StyleBrowse.isChecked() and self.pathSLD == '') or (self.radioButton_StyleBrowse.isChecked() and self.pathSLD == None)):
@@ -78,8 +124,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         else:
             layerPath = self.exportLayer()
             title = self.lineEdit_layertitle.text()
-            t = self.mDateTimeEdit.dateTime()
-            print(t.toString("yyyy MMMM dd@HH.mm.ss zzz ap"))
             abstrack = self.textEdit_layerabstract.toPlainText() 
             params = {"USER":self.user,"GRUP":self.grup,"KODESIMPUL":self.simpulJaringan}
             if self.checkFileExist(layerPath['shp']) and self.checkFileExist(layerPath['dbf']) and self.checkFileExist(layerPath['shx']) and self.checkFileExist(layerPath['prj']) :
@@ -98,12 +142,19 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
                         # self.report(self.label_statusSLD, True, 'SLD Berhasil diunggah! ('+ responseAPISldJSON['RTN']+')')
                         dataPublish = self.uploadShp(layerPath,params)
                         self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
-                        self.linkStyleShp(dataPublish['LID'],dataPublish['ID'],title,abstrack)
 
                         if (self.radioButton_StyleQgis.isChecked()):
                             filesSld['file'].close()
                             os.remove(sldPath)
-                    
+
+                        if (self.pathMeta is not None and self.pathMeta != ''):
+                            print('upload meta jalan',self.pathMeta)         
+                            self.uploadMetadata(dataPublish['LID'])
+                        else:
+                            self.minMeta(dataPublish['LID'],title,abstrack)
+
+                        self.linkStyleShp(dataPublish['LID'],dataPublish['ID'],title,abstrack)
+                        
                     else:
                         filesSld['file'].close()
                         self.sldHandler = SLDDialog(self.user,self.grup,self.simpulJaringan,self.url,sldPath)
@@ -113,6 +164,11 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
                 else:
                     dataPublish = self.uploadShp(layerPath,params)
                     self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'],abstrack)
+                    if (self.pathMeta is not None and self.pathMeta != ''):
+                        print('upload meta jalan',self.pathMeta)         
+                        self.uploadMetadata(dataPublish['LID'])
+                    else:
+                        self.minMeta(dataPublish['LID'],title,abstrack)
                     self.linkStyleShp(dataPublish['LID'],sldName['nama'],title,abstrack)
             
                 # if(dataPublish['RTN'] == self.select_layer.currentText()+'.zip'):
@@ -121,26 +177,25 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
                 #     self.report(self.label_statusLayer, False, 'Layer Gagal diunggah! : '+dataPublish['MSG'])            
                 
                 #metadata
-                if (self.pathMeta is not None and self.pathMeta != ''):
-                    print('upload meta jalan',self.pathMeta)         
-                    self.uploadMetadata(dataPublish['LID'])
- 
             else :
                 print("file Tidak Lengkap")
 
-    def minMeta(self,id,abstrack):
+    def minMeta(self,id,title,abstrack):
+        tanggal = self.mDateTimeEdit.dateTime()
+        tanggal = tanggal.toString("ddd MMM dd yyyy HH:mm:ss")
         data = {"pubdata":{"WORKSPACE":self.grup,
                 "KEYWORD":self.comboBox_keyword.currentText(),
                 "AKSES":self.comboBox_constraint.currentText(),
                 "SELECTEDSIMPUL":self.simpulJaringan,
-                "TITLE":self.lineEdit_layertitle.text(),
+                "TITLE":title,
                 "ID":id,
                 "ABSTRACT":abstrack,
-                "tanggal":self.tanggal.time()}}
+                "tanggal":tanggal}}
         data = json.dumps(data)
+        print(data)
         urlMinMeta = self.url+'/api/minmetadata'
-        responseAPISld = requests.post(urlMinMeta,data=data)
-        print(responseAPISld.text)
+        responseAPIMeta = requests.post(urlMinMeta,data=f"dataPublish={data}")
+        print(responseAPIMeta.text)
 
     def uploadShp(self,layerPath,params):
         zipShp = ZipFile(f"{layerPath['shp'].split('.')[0]}"+'.zip', 'w')
@@ -196,7 +251,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         source = layer.source()
   
         source = source.split("|")
-        EPSGLayer = layer.crs().authid()
   
         tipe = source[0].split(".")[-1]
         if (tipe=="shp"):
