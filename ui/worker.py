@@ -32,10 +32,11 @@ class Worker(QThread):
         self.stopworker = False # initialize the stop variable
 
         self.sldName = sldName
+        print(sldName)
         self.parameter = parameter
         print(self.parameter,self.parameter['user'])
 
-    def run(self,):
+    def run(self):
             self.status.emit('mulai')
             self.progress.emit(0)
             try :
@@ -97,7 +98,6 @@ class Worker(QThread):
                     self.status.emit('aman')
                 
             except Exception as err:
-
                 print('ERROR DAB',err)
                 self.finished.emit()
                 self.status.emit('error')
@@ -177,8 +177,7 @@ class Worker(QThread):
         dataPublish = json.dumps(dataPublish)
         respond = requests.post(url,data=f"dataPublish={dataPublish}")
         print(respond.text)        
-         
-   
+        
     def replacePath(self,source,tipeFile):
         print(tipeFile)
         shp = source.replace(tipeFile, ".shp")

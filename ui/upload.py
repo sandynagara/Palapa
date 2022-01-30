@@ -1,9 +1,6 @@
 import os
 import json
 from pickle import FALSE
-import requests
-from zipfile import ZipFile
-import codecs
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
@@ -56,8 +53,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.pushButton_clearMetadata.clicked.connect(self.clearMetadata)
         self.select_layer.currentTextChanged.connect(self.changeTitle)
       
-
-
         self.ReportDlg = ReportDialog()
         #self.LoginDialog = LoginDialog
         #self.LoginDialog.UserSignal.connect(self.UserParam)
