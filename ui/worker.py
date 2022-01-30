@@ -19,7 +19,7 @@ logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 class Worker(QThread):
 
-    progress = pyqtSignal(int)
+    progress = pyqtSignal(float)
     status = pyqtSignal(object)
     #error = pyqtSignal(str)
     #killed = pyqtSignal()
@@ -36,27 +36,40 @@ class Worker(QThread):
         print(self.parameter,self.parameter['user'])
 
     def run(self,):
-            self.status.emit('mulai')
             self.progress.emit(0)
+            report = self.reportload('general', 'process', 'Mulai mengunggah . . .')
+            print(report)
+            self.status.emit(report)
             try :
-                # Upload SLD
-
                 params = {"USER":self.parameter['user'],"GRUP":self.parameter['grup'],"KODESIMPUL":self.parameter['kodesimpul']}
                 if(self.sldName==False):
+                    #### UPLOAD DENGAN SLD ###
+                    self.progress.emit(0.5)
+                    report = self.reportload('SLD', 'process', 'Mengunggah SLD . . .')
+                    self.status.emit(report)
+
                     urlSld = self.parameter['url']+"/api/styles/add"
                     filesSld = {'file': open(self.parameter['sldPath'],'rb')}
+
+                    ### upload SLD
                     responseAPISld = requests.post(urlSld,files=filesSld,params=params)
                     print("disini")
                     responseAPISldJSON = json.loads(responseAPISld.text)
+                    self.progress.emit(1)
                     if(responseAPISldJSON['MSG'] == 'Upload Success!'):
-                        # self.report(self.label_statusSLD, True, 'SLD Berhasil diunggah! ('+ responseAPISldJSON['RTN']+')')
+                        # Report upload SLD sukses
+                        report = self.reportload('SLD',  True, 'SLD Berhasil diunggah! ('+ responseAPISldJSON['RTN']+')')
+                        self.status.emit(report)
+
+                        ### upload layer
                         dataPublish = self.uploadShp(self.parameter['layerPath'],params)
-                        self.progress.emit(2)
-                        self.status.emit('Layer done')
+
+                        ### publish layer
                         self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
                    
                         self.linkStyleShp(dataPublish['LID'],dataPublish['ID'])
 
+                        ### upload metadata
                         if (self.parameter['pathMeta'] is not None and self.parameter['pathMeta'] != ''):     
                             self.uploadMetadata(dataPublish['LID'])
                         else:
@@ -66,43 +79,59 @@ class Worker(QThread):
                             filesSld['file'].close()
                             os.remove(filesSld['file'].name)
 
-                        self.progress.emit(4)
-                        self.status.emit('Meta done')
-                   
+                        report = self.reportload('general', True, 'Proses unggah selesai!')
+                        self.status.emit(report)
                         self.finished.emit()
-                        self.status.emit('aman')
                         
                     else:
+                        # report upload sld gagal / sudah ada 
                         filesSld['file'].close()
+                        self.progress.emit(0)
                         self.finished.emit()
-                        self.status.emit('error')
+                        report = self.reportload('SLD', False, 'SLD Gagal diunggah! : '+responseAPISldJSON['MSG'] +' ('+ responseAPISldJSON['RTN']+')')
+                        self.status.emit(report)
                         self.sldRename.emit(self.parameter['sldPath'])
-                        # self.report(self.label_statusSLD, False, 'SLD Gagal diunggah! : '+responseAPISldJSON['MSG'] +' ('+ responseAPISldJSON['RTN']+')')
                 
                 else:
+                    #### UPLOAD TANPA SLD ###
+                    self.progress.emit(1)
+                    report = self.reportload('SLD', 'caution', 'SLD tidak diunggah')
+                    self.status.emit(report)
+
+                    ### upload layer
                     dataPublish = self.uploadShp(self.parameter['layerPath'],params)
-                    self.progress.emit(2)
-                    self.status.emit('Layer done')
+
+                    ### publish layer
                     self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
 
+                    ### upload metadata
                     if (self.parameter['pathMeta'] is not None and self.parameter['pathMeta'] != ''):     
                         self.uploadMetadata(dataPublish['LID'])
                     else:
                         self.minMeta(dataPublish['LID'])
 
-                    self.progress.emit(4)
-                    self.status.emit('Meta done')
                     self.linkStyleShp(dataPublish['LID'],self.sldName)
+
+                    report = self.reportload('general', True, 'Proses unggah selesai!')
+                    self.status.emit(report)                    
                     self.finished.emit()
-                    self.status.emit('aman')
                 
             except Exception as err:
 
                 print('ERROR DAB',err)
                 self.finished.emit()
-                self.status.emit('error')
+                report = self.reportload('general', False, f'ERROR : {err}')
+                self.status.emit(report)       
+
+    def reportload(self,type,result,msg):
+        report = {"type":type, "result":result, "msg":msg}
+        return report         
                 
     def uploadShp(self,layerPath,params):
+        self.progress.emit(1.5)
+        report = self.reportload('layer', 'process', 'Mengunggah layer . . .')
+        self.status.emit(report)        
+
         zipShp = ZipFile(f"{layerPath['shp'].split('.')[0]}"+'.zip', 'w')
         # Add multiple files to the zip
         print(layerPath['shp'].split('.')[0].split('/')[-1])
@@ -124,24 +153,22 @@ class Worker(QThread):
         files['file'].close() 
         os.remove(layerPath['shp'].split('.')[0]+'.zip')
 
+        # report upload layer
+        self.progress.emit(2)
+        if(dataPublish['RTN'] == f"{layerPath['shp'].split('.')[0].split('/')[-1]}"+'.zip'):
+            report = self.reportload('layer', True, 'Layer Berhasil diunggah! : '+dataPublish['MSG']+' ('+dataPublish['RTN']+')')
+            self.status.emit(report)
+        else:
+            report = self.reportload('layer', False, 'Layer Gagal diunggah! : '+dataPublish['MSG'])   
+            self.status.emit(report)
+
         return dataPublish
 
-    def minMeta(self,id):
-        data = {"pubdata":{"WORKSPACE":self.parameter['grup'],
-                "KEYWORD":self.parameter['keyword'],
-                "AKSES":self.parameter['akses'],
-                "SELECTEDSIMPUL":self.parameter['kodesimpul'],
-                "TITLE":self.parameter['title'],
-                "ID":id,
-                "ABSTRACT":self.parameter['abstrack'],
-                "tanggal":self.parameter['date']}}
-        data = json.dumps(data)
-        print(data)
-        urlMinMeta = self.parameter['url']+'/api/minmetadata'
-        responseAPIMeta = requests.post(urlMinMeta,data=f"dataPublish={data}")
-        print(responseAPIMeta.text)
-
     def publish(self,kodeEpsg,Lid,Tipe,id):
+        self.progress.emit(2.5)
+        report = self.reportload('publish', 'process', 'Publish layer . . .')
+        self.status.emit(report)
+
         url = self.parameter['url'] + "/api/publish"
         dataPublish = {"pubdata":{"LID": Lid, "TIPE": Tipe,"ID":id,"ABS":self.parameter['abstrack'],"SEPSG":kodeEpsg,"USER":self.parameter['user'],"GRUP":self.parameter['grup']}}
         dataPublish = json.dumps(dataPublish)
@@ -149,12 +176,15 @@ class Worker(QThread):
         print(respond.text)
         respondJSON = json.loads(respond.text)
         self.progress.emit(3)
-        self.status.emit('Publish done')
-        # if(respondJSON['RTN']):
-        #     self.report(self.label_statusPublish, True, 'Layer Berhasil dipublikasikan! : '+respondJSON['MSG'])
-        # else:
-        #     self.report(self.label_statusPublish, False, 'Layer Gagal dipublikasikan! : '+respondJSON['MSG'])
-      
+
+        # report publish layer
+        self.progress.emit(3)
+        if(respondJSON['RTN']):
+            report = self.reportload('publish', True, 'Layer Berhasil dipublikasikan! : '+respondJSON['MSG'])
+        else:
+            report = self.reportload('publish', False, 'Layer Gagal dipublikasikan! : '+respondJSON['MSG'])
+        self.status.emit(report)
+
     def exportLayer(self):
         layerName = self.select_layer.currentText()
         layer = QgsProject().instance().mapLayersByName(layerName)[0]
@@ -193,8 +223,40 @@ class Worker(QThread):
         print(sourceFile)
         return sourceFile
 
-    # upload Metadata
+    # upload Metadata minimal
+    def minMeta(self,id):
+        self.progress.emit(3.5)
+        report = self.reportload('metadata', 'process', 'Mengunggah metadata minimal . . .')
+        self.status.emit(report)
+
+        data = {"pubdata":{"WORKSPACE":self.parameter['grup'],
+                "KEYWORD":self.parameter['keyword'],
+                "AKSES":self.parameter['akses'],
+                "SELECTEDSIMPUL":self.parameter['kodesimpul'],
+                "TITLE":self.parameter['title'],
+                "ID":id,
+                "ABSTRACT":self.parameter['abstrack'],
+                "tanggal":self.parameter['date']}}
+        data = json.dumps(data)
+        print(data)
+        urlMinMeta = self.parameter['url']+'/api/minmetadata'
+        responseAPIMeta = requests.post(urlMinMeta,data=f"dataPublish={data}")
+        print(responseAPIMeta.text)
+        responseAPIMetaJSON = json.loads(responseAPIMeta.text)
+
+        self.progress.emit(4)
+        if(responseAPIMetaJSON['MSG'] == "Metadata minimal disimpan!"):
+            report = self.reportload('metadata', True, 'Metadata minimal berhasil disimpan!')
+        else:
+            report = self.reportload('metadata', False, 'Metadata Gagal diunggah! : '+responseAPIMetaJSON['MSG'])
+        self.status.emit(report)
+
+    # upload Metadata File
     def uploadMetadata(self, Lid) :
+        self.progress.emit(3.5)
+        report = self.reportload('metadata', 'process', 'Mengunggah file metadata . . .')
+        self.status.emit(report)
+
         metadataPath = self.parameter['pathmeta']
         filesMeta = {'file': open(metadataPath,'rb')}
         params = {"akses":self.parameter['akses'],"identifier":Lid,"KODESIMPUL":self.parameter['kodesimpul']}
@@ -203,9 +265,11 @@ class Worker(QThread):
         print(responseAPIMeta.text)
         #return responseAPIMeta.text
         responseAPIMetaJSON = json.loads(responseAPIMeta.text)
-        # self.progress.emit(4)
-        # self.status.emit('Meta done')
-        # if(responseAPIMetaJSON['RTN']):
-        #     self.report(self.label_statusMetadata, True, 'Metadata berhasil diunggah!')
-        # else:
-        #     self.report(self.label_statusMetadata, False, 'Metadata Gagal diunggah! : '+responseAPIMetaJSON['MSG'])
+
+        self.progress.emit(4)
+        if(responseAPIMetaJSON['RTN']):
+            report = self.reportload('metadata', True, 'Metadata berhasil diunggah!')
+        else:
+            report = self.reportload('metadata', False, 'Metadata Gagal diunggah! : '+responseAPIMetaJSON['MSG'])
+        self.status.emit(report)
+    

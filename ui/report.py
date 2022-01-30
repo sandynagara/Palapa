@@ -25,7 +25,9 @@ class ReportDialog(QtWidgets.QDialog, FORM_CLASS):
         super(ReportDialog, self).__init__(parent)
         self.setupUi(self)
         
+        self.accept.setEnabled(False)
         self.reportReset()
+        self.accept.clicked.connect(self.close)
 
     def report(self, label, result, message):
         if result is True:
@@ -34,6 +36,8 @@ class ReportDialog(QtWidgets.QDialog, FORM_CLASS):
             label.setStyleSheet("background-color: none; border-radius: 4px;")
         elif result == 'caution':
             label.setStyleSheet("color: white; background-color: #F28F1E; border-radius: 4px;")
+        elif result == 'process':
+            label.setStyleSheet("color: black; background-color: #92c9e8; border-radius: 4px;")
         else :
             label.setStyleSheet("color: white; background-color: #C4392A; border-radius: 4px;")
         label.setText(message)
@@ -43,4 +47,7 @@ class ReportDialog(QtWidgets.QDialog, FORM_CLASS):
         self.report(self.label_statusLayer, 'reset', '')
         self.report(self.label_statusMetadata, 'reset', '')
         self.report(self.label_statusPublish, 'reset', '')
-        #self.report(self.label_statusbase, 'reset', '')
+        self.report(self.label_statusgeneral, 'reset', '')
+
+    def ok_enable(self):
+        self.accept.setEnabled(True)

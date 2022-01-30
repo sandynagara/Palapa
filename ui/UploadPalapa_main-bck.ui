@@ -130,54 +130,23 @@
           <property name="text">
            <string>Anda masuk sebagai '' pada ''</string>
           </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_logout">
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: rgb(1, 125, 197);</string>
+          </property>
+          <property name="text">
+           <string>Log out</string>
+          </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_logout">
-            <property name="cursor">
-             <cursorShape>PointingHandCursor</cursorShape>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton{
-text-align:right;
-width:50px;
-background:transparent;
-border:0px;
-}
-QPushButton:disabled {
-color:#cccccc;
-
-}
-QPushButton:enabled {
-color:rgb(1, 125, 197);
-}
-
-</string>
-            </property>
-            <property name="text">
-             <string>Log out</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </item>
        </layout>
       </item>
@@ -444,12 +413,6 @@ color:rgb(1, 125, 197);
       </item>
       <item>
        <widget class="QgsDateTimeEdit" name="mDateTimeEdit">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>22</height>
-         </size>
-        </property>
         <property name="displayFormat">
          <string>M/d/yyyy h:mm AP</string>
         </property>

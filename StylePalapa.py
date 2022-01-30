@@ -68,6 +68,12 @@ class StylePalapa:
         self.threadpool = QThreadPool()
         self.check_worker = None
 
+        self.login = LoginDialog()
+        self.upload = UploadDialog()
+        self.login.UserSignal.connect(self.openUpload)
+        self.upload.UserLogout.connect(self.logout)
+        self.LoggedIn = False        
+
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
@@ -154,19 +160,26 @@ class StylePalapa:
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
-            self.login = LoginDialog()
-            self.upload = UploadDialog()
-        self.login.show()
-        self.login.UserSignal.connect(self.openUpload)
-        # show the dialog
-        # Run the dialog event loop
-        result = self.login.exec_()
-        # See if OK was pressed
-        if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
+        if self.LoggedIn == False:
+            self.login.show()
+        elif self.LoggedIn == True:
+            self.upload.show()
+        # # show the dialog
+        # # Run the dialog event loop
+        # result = self.login.exec_()
+        # # See if OK was pressed
+        # if result:
+        #     # Do something useful here - delete the line containing pass and
+        #     # substitute with your code.
+        #     pass
     
     def openUpload(self,payload):
+        self.LoggedIn = True
+        self.login.close()        
         self.upload.show()
         self.upload.UserParam(payload)
+
+    def logout(self):
+        self.LoggedIn = False
+        self.upload.close()        
+        self.login.show()
