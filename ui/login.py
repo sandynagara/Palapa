@@ -69,7 +69,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
 
                         signalsend = {"grup": self.grup, "user": self.user, "url": self.url, "kodesimpul": self.simpulJaringan}
                         self.UserSignal.emit(signalsend)
-                        self.close()
+                        #self.close()
                         print(signalsend)
 
                     print(responseApiJson)

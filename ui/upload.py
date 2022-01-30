@@ -6,13 +6,14 @@ from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.core import QgsProject
 from qgis.PyQt.QtWidgets import QFileDialog
+from PyQt5.QtCore import QThread, pyqtSignal
+
 from .login import LoginDialog
 from .SLDHandler import SLDDialog
 from .worker import Worker
-
 from .report import ReportDialog
 
-from PyQt5.QtCore import QThread, pyqtSignal
+
 
 #from .login import LoginDialog
 
@@ -21,6 +22,8 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'UploadPalapa_main.ui'))
 
 class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
+
+    UserLogout = pyqtSignal()
   
     def __init__(self, parent=None):
         """Constructor."""
@@ -52,7 +55,9 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.pushButton_clearStyle.clicked.connect(self.clearStyle)
         self.pushButton_clearMetadata.clicked.connect(self.clearMetadata)
         self.select_layer.currentTextChanged.connect(self.changeTitle)
-      
+        self.pushButton_logout.clicked.connect(self.logout)      
+
+
         self.ReportDlg = ReportDialog()
         #self.LoginDialog = LoginDialog
         #self.LoginDialog.UserSignal.connect(self.UserParam)
@@ -69,19 +74,21 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.simpulJaringan = signalpayload['kodesimpul']
         layerName = self.select_layer.currentText()
         self.lineEdit_layertitle.setText(layerName)
-        self.label_userdesc.setText(f"Anda masuk sebagai {self.user} pada {self.url}")
+        self.label_userdesc.setText(f"Anda masuk sebagai '{self.user}' pada '{self.url}'")
         self.comboBox_constraint.setCurrentIndex(0)
         self.comboBox_keyword.setCurrentIndex(0)
         print(signalpayload)
     
     def logout(self):
-        self.close()
+        self.UserLogout.emit()
 
-    #Upload Tab2
-
+    ### Cek kelengkapan
     def checking(self):
+        self.ReportDlg.reportReset()
+        self.reportReset()
+        self.report(self.label_statusbase, 'process', 'Mengecek data . . .')
         if((self.radioButton_StyleBrowse.isChecked() and self.pathSLD == '') or (self.radioButton_StyleBrowse.isChecked() and self.pathSLD == None)):
-            # self.report(self.label_statusbase, 'caution', 'Masukkan SLD atau gunakan SLD bawaan')
+            self.report(self.label_statusbase, 'caution', 'Masukkan SLD atau gunakan SLD bawaan')
             print('masukkan SLD atau gunakan sld bawaan')
         else:
             layerPath = self.exportLayer()
@@ -101,9 +108,11 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
                     print('metajalan',self.pathMeta)         
                     self.MetaRun = True
                 self.filesSld['file'].close()
+                self.report(self.label_statusbase, True, 'Data lengkap, mulai mengunggah . . .')
                 self.runUpload()
             else :
                 print("file Tidak Lengkap")
+                self.report(self.label_statusbase, False, 'File tidak lengkap')
 
     def runUpload(self,sldName=False):
         self.thread = QThread()
@@ -137,29 +146,25 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
-        # self.worker.status.connect(self.reportStatus)
-        # self.worker.progress.connect(self.reportProgress)
+        self.worker.status.connect(self.reportStatus)
+        self.worker.progress.connect(self.reportProgress)
 
         self.thread.start() # finally start the thread
-        # self.ReportDlg.show()
-        # self.progressBar.setValue(0)
-        # self.thread.finished.connect(self.reportFinish)
+        self.ReportDlg.show()
+        self.ReportDlg.accept.setEnabled(False)
+        self.thread.finished.connect(self.reportFinish)
+
+        self.pushButton_logout.setEnabled(False)        
         self.upload.setEnabled(False) # disable the start-upload button while thread is running
-        self.thread.finished.connect(lambda: self.upload.setEnabled(True)) # enable the start-thread button when thread has been finished              
-
-    # def reportProgress(self, val):
-    #     # self.report(self.label_statusbase, 'caution', f'Sedang diproses . . . ({val}/4))')
-    #     self.ReportDlg.progressBar.setValue(val/4*100)
-    
-    # def reportStatus(self, status):
-    #     self.ReportDlg.report(self.ReportDlg.label_statusMetadata, True, status)
-
-    # def reportFinish(self):
-    #     self.ReportDlg.report(self.ReportDlg.label_statusSLD, True, 'RAMPUNG!!!!!!!')
-    #     # self.report(self.label_statusbase, True, 'Proses Selesai')
+        self.thread.finished.connect(lambda: self.pushButton_logout.setEnabled(True))
+        self.thread.finished.connect(lambda: self.upload.setEnabled(True))
+        self.thread.finished.connect(lambda: self.ReportDlg.accept.setEnabled(True))
+        # enable the start-thread button when thread has been finished              
 
     def sldRename(self,pathSld):
         print("SLD Rename")
+        self.ReportDlg.hide()
+        self.report(self.label_statusbase,'caution','Nama file SLD sudah ada, silakan rename atau gunakan SLD yang sudah ada')
         self.sldHandler = SLDDialog(self.user,self.grup,self.simpulJaringan,self.url,pathSld)
         self.sldHandler.uploadStyle.connect(self.runUpload)
         self.sldHandler.show()
@@ -253,13 +258,36 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
             label.setStyleSheet("background-color: none; border-radius: 4px;")
         elif result == 'caution':
             label.setStyleSheet("color: white; background-color: #F28F1E; border-radius: 4px;")
+        elif result == 'process':
+            label.setStyleSheet("color: black; background-color: #92c9e8; border-radius: 4px;")
         else :
             label.setStyleSheet("color: white; background-color: #C4392A; border-radius: 4px;")
         label.setText(message)
     
-    # def reportReset(self):
-    #     self.report(self.label_statusSLD, 'reset', '')
-    #     self.report(self.label_statusLayer, 'reset', '')
-    #     self.report(self.label_statusMetadata, 'reset', '')
-    #     self.report(self.label_statusPublish, 'reset', '')
+    def reportReset(self):
+         self.report(self.label_statusbase, 'reset', '')
+    
+    def reportProgress(self, val):
+        self.ReportDlg.progressBar.setValue(val/4*100)
+    
+    def reportStatus(self, status):
+        type = status["type"]
+        result = status["result"]
+        message = status["msg"]
+        if type == 'SLD':
+            self.ReportDlg.report(self.ReportDlg.label_statusSLD, result, message)
+        elif type == 'layer':
+            self.ReportDlg.report(self.ReportDlg.label_statusLayer, result, message)
+        elif type == 'publish':
+            self.ReportDlg.report(self.ReportDlg.label_statusPublish, result, message)
+        elif type == 'metadata':
+            self.ReportDlg.report(self.ReportDlg.label_statusMetadata, result, message)
+        elif type == 'general':
+            self.ReportDlg.report(self.ReportDlg.label_statusgeneral, result, message)
+            self.report(self.label_statusbase, result, message)
+
+    def reportFinish(self):
+        self.report(self.label_statusbase, 'reset', 'Proses Selesai')
+        #self.reportStatus('general',True,'Proses Selesai')
+    
 
