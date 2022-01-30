@@ -37,7 +37,7 @@ class Worker(QThread):
         print(self.parameter,self.parameter['user'])
 
     def run(self):
-            self.status.emit('mulai')
+  
             self.progress.emit(0)
             report = self.reportload('general', 'process', 'Mulai mengunggah . . .')
             print(report)
@@ -105,14 +105,15 @@ class Worker(QThread):
 
                     ### publish layer
                     self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
-
+                    
+                    self.linkStyleShp(dataPublish['LID'],self.sldName)
                     ### upload metadata
                     if (self.parameter['pathMeta'] is not None and self.parameter['pathMeta'] != ''):     
                         self.uploadMetadata(dataPublish['LID'])
                     else:
                         self.minMeta(dataPublish['LID'])
 
-                    self.linkStyleShp(dataPublish['LID'],self.sldName)
+          
 
                     report = self.reportload('general', True, 'Proses unggah selesai!')
                     self.status.emit(report)                    
