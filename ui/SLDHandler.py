@@ -41,7 +41,7 @@ class SLDDialog(QtWidgets.QDialog, FORM_CLASS):
             if(responseAPISldJSON['MSG'] == 'Upload Success!'):
                 open2.close()
                 os.remove(self.sldPath)
-                self.uploadStyle.emit({"nama":self.nama_file.text(),"path":self.sldPath})
+                self.uploadStyle.emit({"nama":self.nama_file.text(),"path":self.sldPath, "new":True})
                 self.close()
             else:
                 self.label.setText(f'Maaf ,Style dengan nama "{self.nama_file.text()}" sudah ada')
@@ -49,7 +49,7 @@ class SLDDialog(QtWidgets.QDialog, FORM_CLASS):
         else:
             self.close()
             os.remove(self.sldPath)
-            self.uploadStyle.emit({"nama":self.nama_file.text(),"path":self.sldPath})
+            self.uploadStyle.emit({"nama":self.nama_file.text(),"path":self.sldPath, "new":False})
             
 
     

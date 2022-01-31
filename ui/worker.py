@@ -53,8 +53,8 @@ class Worker(QThread):
 
                     ### upload SLD
                     responseAPISld = requests.post(urlSld,files=filesSld,params=params)
-                    print("disini")
                     responseAPISldJSON = json.loads(responseAPISld.text)
+                    print(responseAPISldJSON,"SLD")
                     self.progress.emit(1)
                     if(responseAPISldJSON['MSG'] == 'Upload Success!'):
                         # Report upload SLD sukses
@@ -95,8 +95,12 @@ class Worker(QThread):
                 else:
                     #### UPLOAD TANPA SLD ###
                     self.progress.emit(1)
-                    report = self.reportload('SLD', 'caution', 'SLD tidak diunggah')
-                    self.status.emit(report)
+                    if (self.sldName["new"]):
+                        report = self.reportload('SLD', True, f'SLD berhasil diunggah! ({self.sldName["nama"]})')
+                        self.status.emit(report)                        
+                    else:
+                        report = self.reportload('SLD', 'caution', f'SLD tidak diunggah! Menggunakan style ({self.sldName["nama"]})')
+                        self.status.emit(report)
 
                     ### upload layer
                     dataPublish = self.uploadShp(self.parameter['layerPath'],params)
@@ -173,14 +177,14 @@ class Worker(QThread):
         dataPublish = {"pubdata":{"LID": Lid, "TIPE": Tipe,"ID":id,"ABS":self.parameter['abstrack'],"SEPSG":kodeEpsg,"USER":self.parameter['user'],"GRUP":self.parameter['grup']}}
         dataPublish = json.dumps(dataPublish)
         respond = requests.post(url,data=f"dataPublish={dataPublish}")
-        print(respond.text)
+        print(respond.text,"publish")
         respondJSON = json.loads(respond.text)
         self.progress.emit(3)
 
         # report publish layer
         self.progress.emit(3)
         if(respondJSON['RTN']):
-            report = self.reportload('publish', True, 'Layer Berhasil dipublikasikan! : '+respondJSON['MSG'])
+            report = self.reportload('publish', True, f"Layer Berhasil dipublikasikan! : {respondJSON['MSG']}")
         else:
             report = self.reportload('publish', False, 'Layer Gagal dipublikasikan! : '+respondJSON['MSG'])
         self.status.emit(report)
@@ -241,7 +245,7 @@ class Worker(QThread):
         print(data)
         urlMinMeta = self.parameter['url']+'/api/minmetadata'
         responseAPIMeta = requests.post(urlMinMeta,data=f"dataPublish={data}")
-        print(responseAPIMeta.text)
+        print(responseAPIMeta.text,"MinMeta")
         responseAPIMetaJSON = json.loads(responseAPIMeta.text)
 
         self.progress.emit(4)
