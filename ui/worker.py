@@ -32,10 +32,12 @@ class Worker(QThread):
         self.stopworker = False # initialize the stop variable
 
         self.sldName = sldName
+        print(sldName)
         self.parameter = parameter
         print(self.parameter,self.parameter['user'])
 
-    def run(self,):
+    def run(self):
+  
             self.progress.emit(0)
             report = self.reportload('general', 'process', 'Mulai mengunggah . . .')
             print(report)
@@ -107,21 +109,21 @@ class Worker(QThread):
 
                     ### publish layer
                     self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
-
+                    
+                    self.linkStyleShp(dataPublish['LID'],self.sldName)
                     ### upload metadata
                     if (self.parameter['pathMeta'] is not None and self.parameter['pathMeta'] != ''):     
                         self.uploadMetadata(dataPublish['LID'])
                     else:
                         self.minMeta(dataPublish['LID'])
 
-                    self.linkStyleShp(dataPublish['LID'],self.sldName)
+          
 
                     report = self.reportload('general', True, 'Proses unggah selesai!')
                     self.status.emit(report)                    
                     self.finished.emit()
                 
             except Exception as err:
-
                 print('ERROR DAB',err)
                 self.finished.emit()
                 report = self.reportload('general', False, f'ERROR : {err}')
@@ -211,8 +213,7 @@ class Worker(QThread):
         dataPublish = json.dumps(dataPublish)
         respond = requests.post(url,data=f"dataPublish={dataPublish}")
         print(respond.text)        
-         
-   
+        
     def replacePath(self,source,tipeFile):
         print(tipeFile)
         shp = source.replace(tipeFile, ".shp")

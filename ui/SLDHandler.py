@@ -47,9 +47,9 @@ class SLDDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.label.setText(f'Maaf ,Style dengan nama "{self.nama_file.text()}" sudah ada')
                 print("file sama")
         else:
-            self.close()
             os.remove(self.sldPath)
             self.uploadStyle.emit({"nama":self.nama_file.text(),"path":self.sldPath, "new":False})
-            
+            self.close()
+
 
     
