@@ -78,6 +78,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         urlKeyword = self.url+"/api/keyword/list"
         responseKeyword = requests.get(urlKeyword)
         self.comboBox_constraint.setCurrentIndex(0)
+        self.comboBox_keyword.clear()
         for x in responseKeyword.json():
             self.comboBox_keyword.addItem(x['keyword'])
         self.comboBox_keyword.setCurrentIndex(0)
@@ -88,7 +89,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
 
     ### Cek kelengkapan
     def checking(self):
-        
+        self.checkEPSG()
         self.ReportDlg.reportReset()
         self.reportReset()
         self.report(self.label_statusbase, 'process', 'Mengecek data . . .')
@@ -184,6 +185,12 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.filename1 = ''
         self.pathMeta = None
 
+    def checkEPSG(self):
+        layerName = self.select_layer.currentText()
+        layer = QgsProject().instance().mapLayersByName(layerName)[0]
+        lyrCRS = layer.crs().authid()
+        print(lyrCRS)
+    
     def exportLayer(self):
         layerName = self.select_layer.currentText()
         layer = QgsProject().instance().mapLayersByName(layerName)[0]
