@@ -55,6 +55,7 @@ class SLDDialog(QtWidgets.QDialog, FORM_CLASS):
                 print('hapus sld')
                 os.remove(self.sldPath)
             self.uploadStyle.emit({"nama":self.nama_file.text(),"path":self.sldPath, "new":False})
-            
+            self.close()
+
 
     

@@ -1,9 +1,6 @@
 import os
 import json
 from pickle import FALSE
-import requests
-from zipfile import ZipFile
-import codecs
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
