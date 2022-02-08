@@ -4,14 +4,8 @@ from pickle import FALSE
 import requests
 from zipfile import ZipFile
 import logging
-from .SLDHandler import SLDDialog
 
-from qgis.PyQt import uic
-from qgis.PyQt import QtCore
-from qgis.PyQt import QtWidgets
-from qgis.core import QgsProject, Qgis
-from qgis.PyQt.QtWidgets import QFileDialog
-
+from qgis.core import QgsProject
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
@@ -55,28 +49,23 @@ class Worker(QThread):
 
                     ### upload SLD
                     responseAPISld = requests.post(urlSld,files=filesSld,params=params)
-                    print("disini")
+ 
                     responseAPISldJSON = json.loads(responseAPISld.text)
                     self.progress.emit(1)
                     if(responseAPISldJSON['MSG'] == 'Upload Success!'):
                         # Report upload SLD sukses
                         report = self.reportload('SLD',  True, 'SLD Berhasil diunggah! ('+ responseAPISldJSON['RTN']+')')
                         self.status.emit(report)
-
                         ### upload layer
                         dataPublish = self.uploadShp(self.parameter['layerPath'],params)
-
                         ### publish layer
                         self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
-                   
                         self.linkStyleShp(dataPublish['LID'],dataPublish['ID'])
-
                         ### upload metadata
                         if (self.parameter['pathMeta'] is not None and self.parameter['pathMeta'] != ''):     
                             self.uploadMetadata(dataPublish['LID'])
                         else:
                             self.minMeta(dataPublish['LID'])
-
                         if (self.parameter['sLDqgis']):
                             filesSld['file'].close()
                             os.remove(filesSld['file'].name)
@@ -112,8 +101,6 @@ class Worker(QThread):
                         self.uploadMetadata(dataPublish['LID'])
                     else:
                         self.minMeta(dataPublish['LID'])
-
-          
 
                     report = self.reportload('general', True, 'Proses unggah selesai!')
                     self.status.emit(report)                    
@@ -239,10 +226,8 @@ class Worker(QThread):
                 "ABSTRACT":self.parameter['abstrack'],
                 "tanggal":self.parameter['date']}}
         data = json.dumps(data)
-        print(data)
         urlMinMeta = self.parameter['url']+'/api/minmetadata'
         responseAPIMeta = requests.post(urlMinMeta,data=f"dataPublish={data}")
-        print(responseAPIMeta.text)
         responseAPIMetaJSON = json.loads(responseAPIMeta.text)
 
         self.progress.emit(4)

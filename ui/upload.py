@@ -1,7 +1,7 @@
 import os
 import json
 from pickle import FALSE
-
+import requests
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.core import QgsProject
@@ -75,7 +75,11 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         layerName = self.select_layer.currentText()
         self.lineEdit_layertitle.setText(layerName)
         self.label_userdesc.setText(f"Anda masuk sebagai '{self.user}' pada '{self.url}'")
+        urlKeyword = self.url+"/api/keyword/list"
+        responseKeyword = requests.get(urlKeyword)
         self.comboBox_constraint.setCurrentIndex(0)
+        for x in responseKeyword.json():
+            self.comboBox_keyword.addItem(x['keyword'])
         self.comboBox_keyword.setCurrentIndex(0)
         print(signalpayload)
     
@@ -84,6 +88,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
 
     ### Cek kelengkapan
     def checking(self):
+        
         self.ReportDlg.reportReset()
         self.reportReset()
         self.report(self.label_statusbase, 'process', 'Mengecek data . . .')
