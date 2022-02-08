@@ -69,6 +69,7 @@ class Worker(QThread):
                             self.minMeta(dataPublish['LID'])
                         if (self.parameter['sLDqgis']):
                             filesSld['file'].close()
+                            print('hapus sld')
                             os.remove(filesSld['file'].name)
 
                         report = self.reportload('general', True, 'Proses unggah selesai!')
@@ -249,7 +250,7 @@ class Worker(QThread):
         report = self.reportload('metadata', 'process', 'Mengunggah file metadata . . .')
         self.status.emit(report)
 
-        metadataPath = self.parameter['pathmeta']
+        metadataPath = self.parameter['pathMeta']
         filesMeta = {'file': open(metadataPath,'rb')}
         params = {"akses":self.parameter['akses'],"identifier":Lid,"KODESIMPUL":self.parameter['kodesimpul']}
         urlMeta = self.parameter['url']+"/api/meta/link"

@@ -171,7 +171,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         print("SLD Rename")
         self.ReportDlg.hide()
         self.report(self.label_statusbase,'caution','Nama file SLD sudah ada, silakan rename atau gunakan SLD yang sudah ada')
-        self.sldHandler = SLDDialog(self.user,self.grup,self.simpulJaringan,self.url,pathSld)
+        self.sldHandler = SLDDialog(self.user,self.grup,self.simpulJaringan,self.url,pathSld,self.SLDqgis)
         self.sldHandler.uploadStyle.connect(self.runUpload)
         self.sldHandler.show()
 
@@ -299,7 +299,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
             self.report(self.label_statusbase, result, message)
 
     def reportFinish(self):
-        self.report(self.label_statusbase, 'reset', 'Proses Selesai')
+        self.report(self.label_statusbase, 'reset', '')
         #self.reportStatus('general',True,'Proses Selesai')
     
 

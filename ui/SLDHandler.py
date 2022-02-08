@@ -14,7 +14,7 @@ class SLDDialog(QtWidgets.QDialog, FORM_CLASS):
 
     uploadStyle = pyqtSignal(object)
     
-    def __init__(self,user,grup,simpulJaringan,url,sldPath,parent=None):
+    def __init__(self,user,grup,simpulJaringan,url,sldPath,sldqgis,parent=None):
         super(SLDDialog, self).__init__(parent)
         self.setupUi(self)
         self.style_baru.toggled.connect(self.nama_file.setEnabled)
@@ -24,6 +24,7 @@ class SLDDialog(QtWidgets.QDialog, FORM_CLASS):
         self.simpulJaringan=simpulJaringan
         self.url=url
         self.sldPath = sldPath
+        self.sldqgis = sldqgis
         self.namaLama = sldPath.split(".")[0].split("/")[-1]
         self.label.setText(f'Maaf ,Style dengan nama "{self.namaLama}" sudah ada')
         self.nama_file.setText(self.namaLama)
@@ -40,14 +41,19 @@ class SLDDialog(QtWidgets.QDialog, FORM_CLASS):
             print(responseAPISld)
             if(responseAPISldJSON['MSG'] == 'Upload Success!'):
                 open2.close()
-                os.remove(self.sldPath)
+                if (self.sldqgis == True):
+                    print('hapus sld')
+                    os.remove(self.sldPath)
                 self.uploadStyle.emit({"nama":self.nama_file.text(),"path":self.sldPath, "new":True})
                 self.close()
             else:
                 self.label.setText(f'Maaf ,Style dengan nama "{self.nama_file.text()}" sudah ada')
                 print("file sama")
         else:
-            os.remove(self.sldPath)
+            self.close()
+            if (self.sldqgis == True):
+                print('hapus sld')
+                os.remove(self.sldPath)
             self.uploadStyle.emit({"nama":self.nama_file.text(),"path":self.sldPath, "new":False})
             self.close()
 
