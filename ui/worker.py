@@ -118,8 +118,6 @@ class Worker(QThread):
                     else:
                         self.minMeta(dataPublish['LID'])
 
-          
-
                     report = self.reportload('general', True, 'Proses unggah selesai!')
                     self.status.emit(report)                    
                     self.finished.emit()
