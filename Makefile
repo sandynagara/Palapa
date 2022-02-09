@@ -1,7 +1,7 @@
 #/***************************************************************************
 # StylePalapa
 #
-# Plugin yang berguna untuk mengupload style ke dalam palapa
+# Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke geoserver palapa
 #							 -------------------
 #		begin				: 2021-12-27
 #		git sha				: $Format:%H$
@@ -40,7 +40,7 @@ SOURCES = \
 	__init__.py \
 	StylePalapa.py StylePalapa_dialog.py
 
-PLUGINNAME = StylePalapa
+PLUGINNAME = UploadToPalapa
 
 PY_FILES = \
 	__init__.py \
