@@ -5,12 +5,12 @@
 [general]
 name=UploadToPalapa
 qgisMinimumVersion=3.0
-description=Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke geoserver palapa
+description=Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke Geoportal Palapa
 version=0.1
-author=BIG
+author=Sandy Setyanagara, Ahmad Nur Aly, Moh Mahrus Ali
 email=sandysetyanagara@mail.ugm.ac.id
 
-about=Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke geoserver palapa
+about=Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke Geoportal Palapa
 
 tracker=http://bugs
 repository=http://repo

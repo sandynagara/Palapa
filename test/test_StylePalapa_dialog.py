@@ -16,18 +16,18 @@ import unittest
 
 from qgis.PyQt.QtGui import QDialogButtonBox, QDialog
 
-from StylePalapa_dialog import StylePalapaDialog
+from Palapa_dialog import PalapaDialog
 
 from utilities import get_qgis_app
 QGIS_APP = get_qgis_app()
 
 
-class StylePalapaDialogTest(unittest.TestCase):
+class PalapaDialogTest(unittest.TestCase):
     """Test dialog works."""
 
     def setUp(self):
         """Runs before each test."""
-        self.dialog = StylePalapaDialog(None)
+        self.dialog = PalapaDialog(None)
 
     def tearDown(self):
         """Runs after each test."""
@@ -49,7 +49,7 @@ class StylePalapaDialogTest(unittest.TestCase):
         self.assertEqual(result, QDialog.Rejected)
 
 if __name__ == "__main__":
-    suite = unittest.makeSuite(StylePalapaDialogTest)
+    suite = unittest.makeSuite(PalapaDialogTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
 

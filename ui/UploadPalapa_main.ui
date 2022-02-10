@@ -398,6 +398,9 @@ color:rgb(1, 125, 197);
             <height>16777215</height>
            </size>
           </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
           <property name="icon">
            <iconset>
             <normaloff>../img/cancel.png</normaloff>../img/cancel.png</iconset>
@@ -588,6 +591,9 @@ color:rgb(1, 125, 197);
             <width>26</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
           </property>
           <property name="text">
            <string/>

@@ -18,7 +18,7 @@ from qgis.PyQt.QtGui import QIcon
 
 
 
-class StylePalapaDialogTest(unittest.TestCase):
+class PalapaDialogTest(unittest.TestCase):
     """Test rerources work."""
 
     def setUp(self):
@@ -31,12 +31,12 @@ class StylePalapaDialogTest(unittest.TestCase):
 
     def test_icon_png(self):
         """Test we can click OK."""
-        path = ':/plugins/StylePalapa/icon.png'
+        path = ':/plugins/Palapa/icon.png'
         icon = QIcon(path)
         self.assertFalse(icon.isNull())
 
 if __name__ == "__main__":
-    suite = unittest.makeSuite(StylePalapaResourcesTest)
+    suite = unittest.makeSuite(PalapaResourcesTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
 
