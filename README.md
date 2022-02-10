@@ -4,7 +4,7 @@
 ## Tentang Plugin ini
 Plugin Upload To Palapa merupakan Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke Geoportal Palapa
 
-![](./plugin.jpg)
+![](./palapa.jpg)
 
 ## Daftar Fungsi
 Fungsi dari plugin ini antara lain:
