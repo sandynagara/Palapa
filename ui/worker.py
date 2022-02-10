@@ -4,6 +4,7 @@ from pickle import FALSE
 import requests
 from zipfile import ZipFile
 import logging
+from pathlib import Path
 
 from qgis.core import QgsProject
 
@@ -39,13 +40,14 @@ class Worker(QThread):
             try :
                 params = {"USER":self.parameter['user'],"GRUP":self.parameter['grup'],"KODESIMPUL":self.parameter['kodesimpul']}
                 if(self.sldName==False):
-                    #### UPLOAD DENGAN SLD ###
+                    #### UPLOAD DENGAN SLD QGIS / CUSTOM ###
                     self.progress.emit(0.5)
                     report = self.reportload('SLD', 'process', 'Mengunggah SLD . . .')
                     self.status.emit(report)
 
                     urlSld = self.parameter['url']+"/api/styles/add"
                     filesSld = {'file': open(self.parameter['sldPath'],'rb')}
+                    print(filesSld['file'], "(nama file sld)")
 
                     ### upload SLD
                     responseAPISld = requests.post(urlSld,files=filesSld,params=params)
@@ -55,13 +57,14 @@ class Worker(QThread):
                     self.progress.emit(1)
                     if(responseAPISldJSON['MSG'] == 'Upload Success!'):
                         # Report upload SLD sukses
-                        report = self.reportload('SLD',  True, 'SLD Berhasil diunggah! ('+ responseAPISldJSON['RTN']+')')
+                        report = self.reportload('SLD',  True, 'SLD Berhasil diunggah! Menggunakan style:('+ responseAPISldJSON['RTN']+')')
                         self.status.emit(report)
                         ### upload layer
                         dataPublish = self.uploadShp(self.parameter['layerPath'],params)
                         ### publish layer
                         self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
-                        self.linkStyleShp(dataPublish['LID'],dataPublish['ID'])
+                        self.linkStyleShp(dataPublish['LID'],Path(responseAPISldJSON['RTN']).stem)
+                        print(Path(responseAPISldJSON['RTN']).stem)
                         ### upload metadata
                         if (self.parameter['pathMeta'] is not None and self.parameter['pathMeta'] != ''):     
                             self.uploadMetadata(dataPublish['LID'])
@@ -83,16 +86,17 @@ class Worker(QThread):
                         self.finished.emit()
                         report = self.reportload('SLD', False, 'SLD Gagal diunggah! : '+responseAPISldJSON['MSG'] +' ('+ responseAPISldJSON['RTN']+')')
                         self.status.emit(report)
-                        self.sldRename.emit(self.parameter['sldPath'])
+                        if responseAPISldJSON['MSG'] == 'Error, Style dengan nama yang sama sudah ada!':
+                            self.sldRename.emit(self.parameter['sldPath'])
                 
                 else:
-                    #### UPLOAD TANPA SLD ###
+                    #### UPLOAD TANPA SLD / NAMA SLD BARU ###
                     self.progress.emit(1)
                     if (self.sldName["new"]):
-                        report = self.reportload('SLD', True, f'SLD berhasil diunggah! ({self.sldName["nama"]})')
+                        report = self.reportload('SLD', True, f'SLD berhasil diunggah! Menggunakan style: ({self.sldName["nama"]})')
                         self.status.emit(report)                        
                     else:
-                        report = self.reportload('SLD', 'caution', f'SLD tidak diunggah! Menggunakan style ({self.sldName["nama"]})')
+                        report = self.reportload('SLD', 'caution', f'SLD tidak diunggah! Menggunakan style: ({self.sldName["nama"]})')
                         self.status.emit(report)
 
                     ### upload layer
@@ -101,7 +105,7 @@ class Worker(QThread):
                     ### publish layer
                     self.publish(dataPublish['SEPSG'],dataPublish['LID'],dataPublish['TIPE'],dataPublish['ID'])
                     
-                    self.linkStyleShp(dataPublish['LID'],self.sldName)
+                    self.linkStyleShp(dataPublish['LID'],self.sldName["nama"])
                     ### upload metadata
                     if (self.parameter['pathMeta'] is not None and self.parameter['pathMeta'] != ''):     
                         self.uploadMetadata(dataPublish['LID'])
@@ -197,6 +201,7 @@ class Worker(QThread):
         return sourceFile
 
     def linkStyleShp(self,Lid,style):
+        print(f"me-link-kan layer dengan style '{style}'")
         url = self.parameter['url'] + "/api/layers/modify"
         dataPublish = {"pubdata":{"id": Lid,"aktif":False, "tipe": "VECTOR","abstract":self.parameter['abstrack'],"nativename":f"{self.parameter['grup']}:{Lid}","style":style,"title":self.parameter['title']}}
         dataPublish = json.dumps(dataPublish)
@@ -220,7 +225,7 @@ class Worker(QThread):
     # upload Metadata minimal
     def minMeta(self,id):
         self.progress.emit(3.5)
-        report = self.reportload('metadata', 'process', 'Mengunggah metadata minimal . . .')
+        report = self.reportload('metadata', 'process', 'Mengunggah metadata . . .')
         self.status.emit(report)
 
         data = {"pubdata":{"WORKSPACE":self.parameter['grup'],
@@ -239,7 +244,7 @@ class Worker(QThread):
 
         self.progress.emit(4)
         if(responseAPIMetaJSON['MSG'] == "Metadata minimal disimpan!"):
-            report = self.reportload('metadata', True, 'Metadata minimal berhasil disimpan!')
+            report = self.reportload('metadata', True, 'Metadata berhasil disimpan!')
         else:
             report = self.reportload('metadata', False, 'Metadata Gagal diunggah! : '+responseAPIMetaJSON['MSG'])
         self.status.emit(report)

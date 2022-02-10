@@ -32,7 +32,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.login = LoginDialog()
      
         # self.login.UserSignal.connect(self.UserParam)
-        self.upload.setEnabled(True)
+        self.enable_button(True)
         self.upload.clicked.connect(self.checking)
         self.browse_metadata.clicked.connect(self.start_browse_metadata)
         self.browse_style.clicked.connect(self.start_browse_style)
@@ -105,11 +105,12 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
                 if(self.radioButton_StyleQgis.isChecked()):      
                     self.SLDqgis = True              
                     sldPath = self.exportSld()
-                elif(self.radioButton_StyleBrowse.isChecked() and (self.pathSLD != '' or self.pathSLD != None)):    
+                elif(self.radioButton_StyleBrowse.isChecked() and (self.pathSLD != '' or self.pathSLD != None)):  
+                    self.SLDqgis = False  
                     sldPath = self.pathSLD
                 # define SLD parameter
                 self.filesSld = {'file': open(sldPath,'rb')}
-                print(self.filesSld)
+                print(self.filesSld, "fileSLD")
                 if (self.pathMeta is not None and self.pathMeta != ''):
                     print('metajalan',self.pathMeta)         
                     self.MetaRun = True
@@ -160,12 +161,18 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.ReportDlg.accept.setEnabled(False)
         self.thread.finished.connect(self.reportFinish)
 
-        self.pushButton_logout.setEnabled(False)        
-        self.upload.setEnabled(False) # disable the start-upload button while thread is running
-        self.thread.finished.connect(lambda: self.pushButton_logout.setEnabled(True))
-        self.thread.finished.connect(lambda: self.upload.setEnabled(True))
+        self.enable_button(False) # disable the start-upload button while thread is running
+        self.thread.finished.connect(lambda: self.enable_button(True))
         self.thread.finished.connect(lambda: self.ReportDlg.accept.setEnabled(True))
-        # enable the start-thread button when thread has been finished              
+        # enable the start-thread button when thread has been finished    
+
+    def enable_button(self,enable):
+        if (enable):
+            self.pushButton_logout.setEnabled(True)
+            self.upload.setEnabled(True)
+        else :
+            self.pushButton_logout.setEnabled(False)
+            self.upload.setEnabled(False)               
 
     def sldRename(self,pathSld):
         print("SLD Rename")
