@@ -1,7 +1,7 @@
 Plugin Builder Results
 
-Your plugin StylePalapa was created in:
-    C:/Users/lenovo/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins\stylepalapa
+Your plugin Palapa was created in:
+    C:/Users/lenovo/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins\Palapa
 
 Your QGIS plugin directory is located at:
     C:/Users/lenovo/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins
@@ -17,11 +17,11 @@ What's Next:
 
   * Test the plugin by enabling it in the QGIS plugin manager
 
-  * Customize it by editing the implementation file: ``StylePalapa.py``
+  * Customize it by editing the implementation file: ``Palapa.py``
 
   * Create your own custom icon, replacing the default icon.png
 
-  * Modify your user interface by opening StylePalapa_dialog_base.ui in Qt Designer
+  * Modify your user interface by opening Palapa_dialog_base.ui in Qt Designer
 
   * You can use the Makefile to compile your Ui and resource files when
     you make changes. This requires GNU make (gmake)

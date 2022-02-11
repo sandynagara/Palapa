@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>StylePalapaDialogBase</class>
- <widget class="QDialog" name="StylePalapaDialogBase">
+ <class>PalapaDialogBase</class>
+ <widget class="QDialog" name="PalapaDialogBase">
   <property name="enabled">
    <bool>true</bool>
   </property>
@@ -23,7 +23,7 @@
    <string>UploadToPalapa</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">#StylePalapaDialogBase {
+   <string notr="true">#PalapaDialogBase {
  background: rgb(244, 244, 244);
 }</string>
   </property>
@@ -76,7 +76,7 @@
          </size>
         </property>
         <property name="styleSheet">
-         <string notr="true">image: url(:/plugins/StylePalapa/420px-Badan_Informasi_Geospasial_logo.png);</string>
+         <string notr="true">image: url(:/plugins/Palapa/420px-Badan_Informasi_Geospasial_logo.png);</string>
         </property>
         <property name="text">
          <string/>

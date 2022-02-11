@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>StylePalapaDialogBase</class>
- <widget class="QDialog" name="StylePalapaDialogBase">
+ <class>PalapaDialogBase</class>
+ <widget class="QDialog" name="PalapaDialogBase">
   <property name="enabled">
    <bool>true</bool>
   </property>
@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>530</width>
+    <width>598</width>
     <height>450</height>
    </rect>
   </property>
@@ -23,7 +23,7 @@
    <string>Login UploadToPalapa</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">#StylePalapaDialogBase {
+   <string notr="true">#PalapaDialogBase {
  background: rgb(244, 244, 244);
 }</string>
   </property>
@@ -63,21 +63,33 @@
        </spacer>
       </item>
       <item>
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="label_3">
         <property name="minimumSize">
          <size>
-          <width>50</width>
-          <height>50</height>
+          <width>63</width>
+          <height>72</height>
          </size>
         </property>
-        <property name="styleSheet">
-         <string notr="true">image: url(:/plugins/StylePalapa/420px-Badan_Informasi_Geospasial_logo.png);</string>
+        <property name="maximumSize">
+         <size>
+          <width>70</width>
+          <height>80</height>
+         </size>
         </property>
         <property name="text">
          <string/>
         </property>
+        <property name="pixmap">
+         <pixmap>../img/420px-Badan_Informasi_Geospasial_logo.png</pixmap>
+        </property>
+        <property name="scaledContents">
+         <bool>true</bool>
+        </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="margin">
+         <number>5</number>
         </property>
        </widget>
       </item>
