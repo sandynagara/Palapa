@@ -82,6 +82,12 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self._main_tab.addTab(self.publikasiPanel, "Publkasi")
         self._main_tab.addTab(self.metadataPanel, "Metadata")
         self._main_tab.addTab(self.registerService, "Register Service")
+
+        self.registerService.refresh.connect(self.refreshMetadata)
+
+    def checkUser(self):
+        self.publikasiPanel.checkUser()
+        self.metadataPanel.checkUser()
         
     def changeMeta(self):
         if(self.radioButton_meta_lengkap.isChecked()):
@@ -359,5 +365,8 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.metadataPanel.refresh_grid()
         self.publikasiPanel.refresh_grid()
         #self.reportStatus('general',True,'Proses Selesai')
+
+    def refreshMetadata(self):
+        self.metadataPanel.refresh_grid()
     
 

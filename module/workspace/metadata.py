@@ -27,16 +27,25 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
         self.url = readSetting("url")
         self.refresh_grid()
 
+        self.checkUser()
+
         self.btn_raw_meta.clicked.connect(self.raw_metadata)
         self.btn_publish_csw.clicked.connect(self.publikasi_csw)
         self.btn_hapus_meta.clicked.connect(self.hapus_csw)
         self.btn_update_meta.clicked.connect(self.unggah_berkas)
 
+    def checkUser(self):
+        self.kelas = readSetting("kelas")
+        self.grup = readSetting("grup")
+        self.refresh_grid()
+        if(self.kelas != "admin"):
+            self.btn_hapus_meta.setEnabled(False)
+            self.btn_publish_csw.setEnabled(False)
+
     def get_selected_table(self):
 
         item = self.table_metadata.selectedItems()
 
-        
         if(item == []):
             QtWidgets.QMessageBox.warning(
                 None, "Palapa", "Pilih metadata terlebih dahulu"
@@ -183,6 +192,17 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
     
     def unggah_berkas(self):
         dataSelect = self.get_selected_table()
+
+        workspace = dataSelect[0]
+
+        if(workspace != self.grup and self.kelas != "admin"):
+            QtWidgets.QMessageBox.information(
+                None,
+                "Palapa",
+                "Anda Tidak punya akses untuk mengedit metadata ini",
+            )
+            return
+
         unggahBerkas = UnggahBerkas(dataSelect[1],dataSelect[0])
         unggahBerkas.show()
 

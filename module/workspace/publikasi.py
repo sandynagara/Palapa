@@ -18,7 +18,6 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 class Publikasi(QtWidgets.QDialog, FORM_CLASS):
 
-
     def __init__(self, parent=iface.mainWindow()): 
         super(Publikasi, self).__init__(parent)
         self.setupUi(self)
@@ -26,10 +25,20 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
         self.url = readSetting("url")
         self.refresh_grid()
 
+        self.checkUser()
+
         self.btn_informasi.clicked.connect(self.informasi)
         self.btn_edit.clicked.connect(self.edit)
         self.btn_publikasi.clicked.connect(self.publikasi)
         self.btn_hapus.clicked.connect(self.hapus)
+
+    def checkUser(self):
+        self.kelas = readSetting("kelas")
+        self.grup = readSetting("grup")
+        self.refresh_grid()
+        if(self.kelas != "admin"):
+            self.btn_publikasi.setEnabled(False)
+            self.btn_hapus.setEnabled(False)
 
     def get_selected_table(self):
 
@@ -175,12 +184,21 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
         id = dataSelect[0]
         title = dataSelect[3]
         abstrack = dataSelect[10]
+        workspace = dataSelect[2]
         aktif = dataSelect[5]
         srs = dataSelect[6]
         style = dataSelect[8]
         nativename = dataSelect[9]
         tipe = dataSelect[4]
-          
+        
+        if(workspace != self.grup and self.kelas != "admin"):
+            QtWidgets.QMessageBox.information(
+                None,
+                "Palapa",
+                "Anda Tidak punya akses untuk mengedit file ini",
+            )
+            return
+
         informasiEditLayer = InformasiEditLayer("edit",id,title,abstrack,srs,style,nativename,tipe,aktif)
         informasiEditLayer.show()
 
