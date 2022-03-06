@@ -29,8 +29,8 @@ from qgis.PyQt.QtWidgets import QAction
 from .resources import *
 # Import the code for the dialog
 #from .ui.upload import UploadDialog
-from .ui.login import LoginDialog
-from .ui.upload import UploadDialog
+from .module.workspace.login import LoginDialog
+from .module.workspace.upload import UploadDialog
 import os.path
 
 

@@ -9,23 +9,27 @@ from qgis.PyQt.QtWidgets import QFileDialog
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from .login import LoginDialog
-from .SLDHandler import SLDDialog
-from .worker import Worker
-from .report import ReportDialog
-
-
+from ..SLDHandler import SLDDialog
+from ..worker import Worker
+from ..report import ReportDialog
+from .publikasi import Publikasi
+from .metadata import Metadata
+from ..metadata_form import MetadataForm
+from .register_service import RegisterService
+from qgis.utils import iface
+from ..utils import storeSetting
 
 #from .login import LoginDialog
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'UploadPalapa_main.ui'))
+    os.path.dirname(__file__), '../../ui/UploadPalapa_main.ui'))
 
 class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
 
     UserLogout = pyqtSignal()
   
-    def __init__(self, parent=None):
+    def __init__(self,parent=iface.mainWindow()):
         """Constructor."""
         super(UploadDialog, self).__init__(parent)
         self.setupUi(self)
@@ -55,16 +59,51 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.pushButton_clearStyle.clicked.connect(self.clearStyle)
         self.pushButton_clearMetadata.clicked.connect(self.clearMetadata)
         self.select_layer.currentTextChanged.connect(self.changeTitle)
-        self.pushButton_logout.clicked.connect(self.logout)      
+        self.pushButton_logout.clicked.connect(self.logout) 
+        self.meta_lengkap.clicked.connect(self.isi_metadata_lengkap) 
 
-
+        self.radioButton_meta_lengkap.toggled.connect(self.changeMeta)
+        self.radioButton_meta_xml.toggled.connect(self.changeMeta)
+        self.radioButton_meta_min.toggled.connect(self.changeMeta)
+        
         self.ReportDlg = ReportDialog()
+        self.changeMeta()
+        self.setup_workpanel()
         #self.LoginDialog = LoginDialog
         #self.LoginDialog.UserSignal.connect(self.UserParam)
+
+    def setup_workpanel(self):
+        # self._main_dock = self.stackedWidget.findChild(QtWidgets.QWidget, "main_dock")
+        # self._main_tab = self._main_dock.findChild(QtWidgets.QWidget, "main_tab")
+        self.publikasiPanel = Publikasi()
+        self.metadataPanel = Metadata()
+        self.registerService = RegisterService()
+
+        self._main_tab.addTab(self.publikasiPanel, "Publkasi")
+        self._main_tab.addTab(self.metadataPanel, "Metadata")
+        self._main_tab.addTab(self.registerService, "Register Service")
+        
+    def changeMeta(self):
+        if(self.radioButton_meta_lengkap.isChecked()):
+            self.meta_lengkap.setVisible(True) 
+            self.browse_metadata.setVisible(False) 
+            self.lineEdit_metadata.setVisible(False) 
+            self.pushButton_clearMetadata.setVisible(False) 
+        elif(self.radioButton_meta_xml.isChecked()):
+            self.browse_metadata.setVisible(True) 
+            self.lineEdit_metadata.setVisible(True) 
+            self.pushButton_clearMetadata.setVisible(True) 
+            self.meta_lengkap.setVisible(False) 
+        else:
+            self.browse_metadata.setVisible(False) 
+            self.lineEdit_metadata.setVisible(False) 
+            self.pushButton_clearMetadata.setVisible(False) 
+            self.meta_lengkap.setVisible(False) 
 
     def changeTitle(self):
         layerName = self.select_layer.currentText()
         self.lineEdit_layertitle.setText(layerName)
+        self.metadataForm = MetadataForm(layerName)
 
     def UserParam(self, signalpayload):
         print('signal nangkep',signalpayload)
@@ -79,9 +118,11 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         responseKeyword = requests.get(urlKeyword)
         self.comboBox_constraint.setCurrentIndex(0)
         self.comboBox_keyword.clear()
+        storeSetting("keyword",responseKeyword.json())
         for x in responseKeyword.json():
             self.comboBox_keyword.addItem(x['keyword'])
         self.comboBox_keyword.setCurrentIndex(0)
+        self.metadataForm = MetadataForm(layerName)
         print(signalpayload)
     
     def logout(self):
@@ -144,6 +185,11 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
                 "date":tanggal,
                 "keyword":keyword,
                 "akses":akses}
+
+        if(self.radioButton_meta_lengkap.isChecked()):
+            data["metadataLengkap"] = self.metadataForm.getMetadata()
+        else:
+            data["metadataLengkap"] = None
 
         self.worker = Worker(data,sldName)
         self.worker.sldRename.connect(self.sldRename)
@@ -268,7 +314,10 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.lineEdit_style.setText(filePath)
         self.pathSLD = filePath
 
-
+    def isi_metadata_lengkap(self):
+        self.metadataForm.show()
+        constraint =  self.comboBox_constraint.currentText()
+        self.metadataForm.setKeyword(constraint)
     # report upload
     def report(self, label, result, message):
         if result is True:
@@ -307,6 +356,8 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def reportFinish(self):
         self.report(self.label_statusbase, 'reset', '')
+        self.metadataPanel.refresh_grid()
+        self.publikasiPanel.refresh_grid()
         #self.reportStatus('general',True,'Proses Selesai')
     
 

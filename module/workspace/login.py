@@ -5,16 +5,15 @@ import requests
 from zipfile import ZipFile
 import codecs
 
+from ..utils import storeSetting
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
-from qgis.core import QgsProject
-from qgis.PyQt.QtWidgets import QFileDialog
 
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import pyqtSignal
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'UploadPalapa_login.ui'))
+    os.path.dirname(__file__), '../../ui/UploadPalapa_login.ui'))
 
 class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
 
@@ -63,10 +62,15 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                         self.user = responseApiJson['user']
                         self.url = url_login
                         responseSimpul = requests.get(self.url+'/api/sisteminfo')
-                        responseSimpul = json.loads(responseSimpul.text)
+                        responseSimpul = json.loads(responseSimpul.content)
                         self.simpulJaringan = responseSimpul['kodesimpul'].split(",")[0]
 
-
+                        storeSetting("system",responseSimpul)
+                        storeSetting("url",self.url)
+                        storeSetting("user",self.user)
+                        storeSetting("kodesimpul",self.simpulJaringan)
+                        storeSetting("grup", self.grup)
+                        
                         signalsend = {"grup": self.grup, "user": self.user, "url": self.url, "kodesimpul": self.simpulJaringan}
                         self.UserSignal.emit(signalsend)
                         #self.close()

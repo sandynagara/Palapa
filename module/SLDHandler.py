@@ -1,4 +1,3 @@
-from distutils.command.upload import upload
 import os
 import requests
 import json
@@ -9,7 +8,7 @@ from PyQt5.QtCore import pyqtSignal
 from math import *
 from pathlib import Path
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'SLDHandler.ui'))
+FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), '../ui/SLDHandler.ui'))
 
 class SLDDialog(QtWidgets.QDialog, FORM_CLASS):
 

@@ -16,7 +16,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'report_dialog.ui'))
+    os.path.dirname(__file__), '../ui/report_dialog.ui'))
 
 class ReportDialog(QtWidgets.QDialog, FORM_CLASS):
     

@@ -16,8 +16,6 @@ class Worker(QThread):
 
     progress = pyqtSignal(float)
     status = pyqtSignal(object)
-    #error = pyqtSignal(str)
-    #killed = pyqtSignal()
     finished = pyqtSignal()
     sldRename = pyqtSignal(object)
 
@@ -27,9 +25,7 @@ class Worker(QThread):
         self.stopworker = False # initialize the stop variable
 
         self.sldName = sldName
-        print(sldName)
         self.parameter = parameter
-        print(self.parameter,self.parameter['user'])
 
     def run(self):
   
@@ -107,7 +103,9 @@ class Worker(QThread):
                     
                     self.linkStyleShp(dataPublish['LID'],self.sldName["nama"])
                     ### upload metadata
-                    if (self.parameter['pathMeta'] is not None and self.parameter['pathMeta'] != ''):     
+                    if (self.parameter["metadataLengkap"] is not None):
+                        self.uploadMetadataLengkap(dataPublish['LID'])
+                    elif (self.parameter['pathMeta'] is not None and self.parameter['pathMeta'] != ''):     
                         self.uploadMetadata(dataPublish['LID'])
                     else:
                         self.minMeta(dataPublish['LID'])
@@ -269,5 +267,40 @@ class Worker(QThread):
             report = self.reportload('metadata', True, 'Metadata berhasil diunggah!')
         else:
             report = self.reportload('metadata', False, 'Metadata Gagal diunggah! : '+responseAPIMetaJSON['MSG'])
+        self.status.emit(report)
+
+    def uploadMetadataLengkap(self,Lid):
+        self.progress.emit(3.5)
+        report = self.reportload('metadata', 'process', 'Mengunggah file metadata . . .')
+        self.status.emit(report)
+
+        # "tanggal": tanggal, 
+        # "WORKSPACE": self.workspace,
+        # "ABSTRACT":abstrack,
+        # "KEYWORD":keyword,
+        # "AKSES":akses,
+        # "ID":self.identifer,
+        urlUpload = self.parameter['url']+"/api/lengkapmetadata"
+
+        metadataLengkap = self.parameter["metadataLengkap"]
+        metadataLengkap["tanggal"] = self.parameter['date']
+        metadataLengkap["WORKSPACE"] = self.parameter['grup']
+        metadataLengkap["ABSTRACT"] = self.parameter['abstrack']
+        metadataLengkap["KEYWORD"] = self.parameter['keyword']
+        metadataLengkap["AKSES"] = self.parameter['akses']
+        metadataLengkap["ID"] = Lid
+
+        data = {"pubdata":metadataLengkap}
+        data = json.dumps(data)
+        print(data)
+        response = requests.post(urlUpload,data=f"dataPublish={data}")
+        print(response)
+        dataPublish = json.loads(response.content)
+
+        self.progress.emit(4)
+        if(dataPublish['MSG'] == "Metadata Berhasil disimpan!"):
+            report = self.reportload('metadata', True, 'Metadata berhasil diunggah!')
+        else:
+            report = self.reportload('metadata', False, 'Metadata Gagal diunggah! : '+dataPublish['MSG'])
         self.status.emit(report)
     
