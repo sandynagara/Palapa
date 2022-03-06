@@ -175,7 +175,8 @@ class Palapa:
     
     def openUpload(self,payload):
         self.LoggedIn = True
-        self.login.close()        
+        self.login.close()
+        self.upload.checkUser()       
         self.upload.show()
         self.upload.UserParam(payload)
 

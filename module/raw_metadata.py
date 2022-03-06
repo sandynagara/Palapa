@@ -325,11 +325,8 @@ class RawMetadata(QtWidgets.QDialog, FORM_CLASS):
             }
         }
         data = json.dumps(data)
-        print(data)
         response = requests.post(urlUpload,data=f"dataPublish={data}")
-        print(response)
         dataPublish = json.loads(response.content)
-        print(dataPublish)
         if(dataPublish["MSG"] == "Metadata Berhasil disimpan!"):
             QtWidgets.QMessageBox.information(
                 None,

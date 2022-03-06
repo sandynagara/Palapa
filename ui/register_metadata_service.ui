@@ -52,7 +52,11 @@
     </widget>
    </item>
    <item>
-    <widget class="QgsDateTimeEdit" name="date_tanggal"/>
+    <widget class="QgsDateTimeEdit" name="date_tanggal">
+     <property name="displayFormat">
+      <string>M/d/yyyy </string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QLabel" name="label_5">
@@ -101,6 +105,9 @@
       <widget class="QPushButton" name="btn_save">
        <property name="cursor">
         <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">padding:10px</string>
        </property>
        <property name="text">
         <string>Simpan Metadata</string>

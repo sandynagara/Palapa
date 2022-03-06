@@ -23,12 +23,32 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         """Constructor."""
         super(LoginDialog, self).__init__(parent)
         self.setupUi(self)
+
+        self.setup_workpanel()
         #Tab1
+           
+    def setup_workpanel(self):
         self.QPushButton_test_connection.clicked.connect(self.runConnectionTest)
         self.lineEdit_username.textChanged.connect(self.connectionValuesChanged)
         self.lineEdit_password.textChanged.connect(self.connectionValuesChanged)
-        self.lineEdit_url.textChanged.connect(self.connectionValuesChanged)      
+        self.lineEdit_url.textChanged.connect(self.connectionValuesChanged)  
 
+        self.cmb_geoportal.addItem("Geoportal Development Lampung","http://lampungprov.ina-sdi.or.id")
+        self.cmb_geoportal.addItem("Geoportal Kota Yogyakarta","http://geoportal.jogjakota.go.id/")
+        self.cmb_geoportal.addItem("Lainnya","")
+
+        self.cmb_geoportal.currentIndexChanged.connect(self.changeGeoportal)
+
+        self.lineEdit_url.setText(self.cmb_geoportal.currentData())
+        self.lineEdit_url.setEnabled(False)
+
+    def changeGeoportal(self):
+        data = self.cmb_geoportal.currentData()
+        self.lineEdit_url.setText(data)
+        if(data == ""):
+            self.lineEdit_url.setEnabled(True)
+        else:
+            self.lineEdit_url.setEnabled(False)
     # Connection Test Tab1 
     def connectionValuesChanged(self):
         self.label_status.setText('')
@@ -60,6 +80,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                         self.label_status.setText('Terhubung')
                         self.grup = responseApiJson['grup']
                         self.user = responseApiJson['user']
+                        self.kelas = responseApiJson['kelas']
                         self.url = url_login
                         responseSimpul = requests.get(self.url+'/api/sisteminfo')
                         responseSimpul = json.loads(responseSimpul.content)
@@ -70,6 +91,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                         storeSetting("user",self.user)
                         storeSetting("kodesimpul",self.simpulJaringan)
                         storeSetting("grup", self.grup)
+                        storeSetting("kelas", self.kelas)
                         
                         signalsend = {"grup": self.grup, "user": self.user, "url": self.url, "kodesimpul": self.simpulJaringan}
                         self.UserSignal.emit(signalsend)
