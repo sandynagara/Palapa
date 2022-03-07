@@ -20,7 +20,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>UploadToPalapa</string>
+   <string>Palapa</string>
   </property>
   <property name="styleSheet">
    <string notr="true">#StylePalapaDialogBase {
@@ -106,7 +106,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Upload to Palapa</string>
+         <string>Palapa</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>

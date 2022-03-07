@@ -22,13 +22,14 @@ class RegisterService(QtWidgets.QDialog, FORM_CLASS):
         super(RegisterService, self).__init__(parent)
         self.setupUi(self)
 
+        self.btn_save.clicked.connect(self.upload)
+
+    def checkUser(self):
         self.url = readSetting("url")
         self.keyword =  readSetting("keyword")
         self.grup =  readSetting("grup")
         for x in self.keyword:
             self.cmb_keyword.addItem(x['keyword'])
-
-        self.btn_save.clicked.connect(self.upload)
 
     def upload(self):
         alamatService = self.lineEdit_alamat.text()

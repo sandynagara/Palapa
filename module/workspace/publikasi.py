@@ -21,11 +21,6 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
     def __init__(self, parent=iface.mainWindow()): 
         super(Publikasi, self).__init__(parent)
         self.setupUi(self)
-        
-        self.url = readSetting("url")
-        self.refresh_grid()
-
-        self.checkUser()
 
         self.btn_informasi.clicked.connect(self.informasi)
         self.btn_edit.clicked.connect(self.edit)
@@ -35,6 +30,7 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
     def checkUser(self):
         self.kelas = readSetting("kelas")
         self.grup = readSetting("grup")
+        self.url = readSetting("url")
         self.refresh_grid()
         if(self.kelas != "admin"):
             self.btn_publikasi.setEnabled(False)
@@ -75,6 +71,7 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
         table.add_column("layer_abstract")
         
         response = requests.get(self.url+'/api/getWMSlayers')
+        print(response.url)
         layerSpasial = json.loads(response.content)
         print(layerSpasial)
         

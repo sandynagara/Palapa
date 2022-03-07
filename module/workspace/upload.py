@@ -88,6 +88,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
     def checkUser(self):
         self.publikasiPanel.checkUser()
         self.metadataPanel.checkUser()
+        self.registerService.checkUser()
         
     def changeMeta(self):
         if(self.radioButton_meta_lengkap.isChecked()):

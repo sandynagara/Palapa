@@ -85,7 +85,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                         responseSimpul = requests.get(self.url+'/api/sisteminfo')
                         responseSimpul = json.loads(responseSimpul.content)
                         self.simpulJaringan = responseSimpul['kodesimpul'].split(",")[0]
-
+                        print("ini pertama")
                         storeSetting("system",responseSimpul)
                         storeSetting("url",self.url)
                         storeSetting("user",self.user)

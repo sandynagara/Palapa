@@ -23,11 +23,6 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
         super(Metadata, self).__init__(parent)
         self.setupUi(self)
         self._rows = []
-        
-        self.url = readSetting("url")
-        self.refresh_grid()
-
-        self.checkUser()
 
         self.btn_raw_meta.clicked.connect(self.raw_metadata)
         self.btn_publish_csw.clicked.connect(self.publikasi_csw)
@@ -37,6 +32,7 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
     def checkUser(self):
         self.kelas = readSetting("kelas")
         self.grup = readSetting("grup")
+        self.url = readSetting("url")
         self.refresh_grid()
         if(self.kelas != "admin"):
             self.btn_hapus_meta.setEnabled(False)
