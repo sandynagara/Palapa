@@ -99,6 +99,9 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
             dataSelect = self.get_selected_table()
             print(dataSelect)
 
+            if(dataSelect == None):
+                return
+
             id = dataSelect[0]
             title = dataSelect[3]
             abstrack = dataSelect[10]
@@ -118,6 +121,9 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
     def informasi(self):
         dataSelect = self.get_selected_table()
 
+        if(dataSelect == None):
+            return
+
         id = dataSelect[0]
         title = dataSelect[3]
         abstrack = dataSelect[10]
@@ -132,6 +138,9 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
         self.thread = QThread()
 
         dataSelect = self.get_selected_table()
+
+        if(dataSelect == None):
+            return
 
         id = dataSelect[0]
         workspace = dataSelect[2]
@@ -177,6 +186,9 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
 
     def edit(self):
         dataSelect = self.get_selected_table()
+
+        if(dataSelect == None):
+            return
 
         id = dataSelect[0]
         title = dataSelect[3]

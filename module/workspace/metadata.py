@@ -84,6 +84,9 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
     def raw_metadata(self):
         dataSelect = self.get_selected_table()
 
+        if(dataSelect == None):
+            return
+
         if(dataSelect[2] != "Y"):
             QtWidgets.QMessageBox.information(
                         None,
@@ -97,6 +100,9 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
 
     def publikasi_csw(self):
         dataSelect = self.get_selected_table()
+
+        if(dataSelect == None):
+            return
 
         if(dataSelect[2] != "Y"):
             QtWidgets.QMessageBox.information(
@@ -149,6 +155,10 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
 
     def hapus_csw(self):
         dataSelect = self.get_selected_table()
+        
+        if(dataSelect == None):
+            return
+
         identifier = dataSelect[1]
         workspace = dataSelect[0]   
 
@@ -188,6 +198,9 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
     
     def unggah_berkas(self):
         dataSelect = self.get_selected_table()
+
+        if(dataSelect == None):
+            return
 
         workspace = dataSelect[0]
 
