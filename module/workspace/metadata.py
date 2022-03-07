@@ -37,6 +37,10 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
         if(self.kelas != "admin"):
             self.btn_hapus_meta.setEnabled(False)
             self.btn_publish_csw.setEnabled(False)
+        else:
+            self.btn_hapus_meta.setEnabled(True)
+            self.btn_publish_csw.setEnabled(True)
+
 
     def get_selected_table(self):
 

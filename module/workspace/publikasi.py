@@ -35,6 +35,9 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
         if(self.kelas != "admin"):
             self.btn_publikasi.setEnabled(False)
             self.btn_hapus.setEnabled(False)
+        else:
+            self.btn_publikasi.setEnabled(True)
+            self.btn_hapus.setEnabled(True)
 
     def get_selected_table(self):
 
