@@ -63,7 +63,7 @@ class Palapa:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&Upload To Palapa')
+        self.menu = self.tr(u'&Palapa')
 
         self.threadpool = QThreadPool()
         self.check_worker = None
@@ -136,7 +136,7 @@ class Palapa:
         icon_path = ':/plugins/Plugin-upload-Palapa/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Upload To Palapa'),
+            text=self.tr(u'Palapa'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -148,7 +148,7 @@ class Palapa:
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&Upload To Palapa'),
+                self.tr(u'&Palapa'),
                 action)
             self.iface.removeToolBarIcon(action)
 

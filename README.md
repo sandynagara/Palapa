@@ -1,8 +1,8 @@
 
-# Upload To Palapa
+# Palapa
 
 ## Tentang Plugin ini
-Plugin Upload To Palapa merupakan Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke Geoportal Palapa
+Palapa merupakan Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke geoportal Palapa serta melakukan fungsi yang ada di geoportal Palapa
 
 ![](./palapa.jpg)
 
@@ -11,6 +11,9 @@ Fungsi dari plugin ini antara lain:
 * Memupload file shp ke dalam geoportal palapa
 * Mengupload file style(.sld) ke dalam geoportal palapa
 * Mengupload metadata ke dalam geoportal palapa
+* Mempublish, mengedit, dan menghapus layer spasial yang berada di geoportal Palapa
+* Mempublish metadata ke CSW, mengedit, dan menghapus metadata dari CSW
+* Melakukan register service 
 
 ## Lisensi
 Lisensi plugin ini berada di bawah naungan **GNU-AGPLv3** sebagai berikut:

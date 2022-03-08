@@ -110,7 +110,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Upload to Palapa</string>
+         <string>Palapa</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
