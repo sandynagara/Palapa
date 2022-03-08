@@ -3,14 +3,14 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=UploadToPalapa
+name=Palapa
 qgisMinimumVersion=3.0
-description=Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke Geoportal Palapa
+description=Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke geoportal Palapa serta melakukan fungsi yang ada di geoportal Palapa
 version=0.1
 author=Sandy Setyanagara, Ahmad Nur Aly, Moh Mahrus Ali
 email=sandysetyanagara@mail.ugm.ac.id
 
-about=Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke Geoportal Palapa
+about= Plugin yang berfungsi untuk mengupload data spasial, style, dan metadata ke geoportal Palapa serta melakukan fungsi yang ada di geoportal Palapa
 
 tracker=http://bugs
 repository=http://repo

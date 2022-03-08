@@ -40,7 +40,7 @@ SOURCES = \
 	__init__.py \
 	Palapa.py Palapa_dialog.py
 
-PLUGINNAME = UploadToPalapa
+PLUGINNAME = Palapa
 
 PY_FILES = \
 	__init__.py \

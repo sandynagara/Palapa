@@ -20,7 +20,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Login UploadToPalapa</string>
+   <string>Login Palapa</string>
   </property>
   <property name="styleSheet">
    <string notr="true">#PalapaDialogBase {
