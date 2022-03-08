@@ -12,8 +12,8 @@ email=sandysetyanagara@mail.ugm.ac.id
 
 about= Plugin yang berfungsi untuk mengupload data spasial, style, dan metadata ke geoportal Palapa serta melakukan fungsi yang ada di geoportal Palapa
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/sandynagara/Palapa.git
+repository=https://github.com/sandynagara/Palapa.git
 # End of mandatory metadata
 
 # Recommended items:
@@ -25,7 +25,7 @@ hasProcessingProvider=no
 # Tags are comma separated with spaces allowed
 tags=python
 
-homepage=http://homepage
+homepage=https://github.com/sandynagara/Palapa.git
 category=Plugins
 icon=icon.png
 # experimental flag
