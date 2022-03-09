@@ -5,12 +5,12 @@
 [general]
 name=Palapa
 qgisMinimumVersion=3.0
-description=Plugin yang berguna untuk mengupload data spasial, style, dan metadata ke geoportal Palapa serta melakukan fungsi yang ada di geoportal Palapa
+description=Upload, editing and delete spatial data or metadata from geoportal Palapa
 version=0.1
 author=Sandy Setyanagara, Ahmad Nur Aly, Moh Mahrus Ali
 email=sandysetyanagara@mail.ugm.ac.id
 
-about= Plugin yang berfungsi untuk mengupload data spasial, style, dan metadata ke geoportal Palapa serta melakukan fungsi yang ada di geoportal Palapa
+about= Upload, editing and delete spatial data or metadata from geoportal Palapa
 
 tracker=https://github.com/sandynagara/Palapa.git
 repository=https://github.com/sandynagara/Palapa.git
