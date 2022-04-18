@@ -6,7 +6,7 @@
 name=Palapa
 qgisMinimumVersion=3.0
 description=Upload, editing and delete spatial data or metadata from geoportal Palapa
-version=0.1
+version=1.1
 author=Sandy Setyanagara, Ahmad Nur Aly, Moh Mahrus Ali
 email=sandysetyanagara@mail.ugm.ac.id
 

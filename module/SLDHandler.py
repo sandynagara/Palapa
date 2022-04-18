@@ -30,7 +30,9 @@ class SLDDialog(QtWidgets.QDialog, FORM_CLASS):
         self.label.setText(f'Maaf ,Style dengan nama "{self.namaLama}" sudah ada')
         self.nama_file.setText(self.namaLama)
 
+    #Rename SLD
     def SldName(self):
+        #Handle jika mengupload style baru
         if self.style_baru.isChecked():
             self.nama = self.nama_file.text()
             self.show()
@@ -38,6 +40,7 @@ class SLDDialog(QtWidgets.QDialog, FORM_CLASS):
             title , open2 = filesSld["file"]
             params = {"USER":self.user,"GRUP":self.grup,"KODESIMPUL":self.simpulJaringan}
             urlSld = self.url+"/api/styles/add"
+            #Mengupload SLD
             responseAPISld = requests.post(urlSld,files=filesSld,params=params)
             responseAPISldJSON = json.loads(responseAPISld.text)
             print(responseAPISld)

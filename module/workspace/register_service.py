@@ -24,6 +24,7 @@ class RegisterService(QtWidgets.QDialog, FORM_CLASS):
 
         self.btn_save.clicked.connect(self.upload)
 
+    #Check kelas user 
     def checkUser(self):
         try:
             self.cmb_keyword.clear()
@@ -36,7 +37,8 @@ class RegisterService(QtWidgets.QDialog, FORM_CLASS):
         except Exception as err:
             print(err)
 
-    def upload(self):
+    # Upload register service
+    def upload(self):   
         alamatService = self.lineEdit_alamat.text()
         titleService = self.lineEdit_title.text()
         abstrack = self.textEdit_abstrak.toPlainText()

@@ -5,7 +5,7 @@ import requests
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.utils import iface
-from qgis.PyQt.QtWidgets import QTableWidgetItem
+from qgis.PyQt.QtCore import Qt
 from ..models.dataset import Dataset
 
 from ..utils import readSetting
@@ -28,7 +28,35 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
         self.btn_publish_csw.clicked.connect(self.publikasi_csw)
         self.btn_hapus_meta.clicked.connect(self.hapus_csw)
         self.btn_update_meta.clicked.connect(self.unggah_berkas)
+        self.cariMetadata.valueChanged.connect(self.findLayer)
+        self.refreshButton.clicked.connect(self.refresh_grid)
 
+    # Mencari layer dari daftar layer
+    def findLayer(self):
+        textto_find = self.cariMetadata.value()
+        print(self.metaList,"Metalist")
+        result = [x for x in self.metaList if x["identifier"].startswith(textto_find)]
+        
+        dataset = Dataset()
+        table = dataset.add_table("Metadata")
+        table.add_column("Workspace")
+        table.add_column("Identifier")
+        table.add_column("Ada Metadata")
+        table.add_column("Akses")
+        table.add_column("Metadata Terpublikasi")
+        table.add_column("downloadable")
+        for metadata in result:
+            d_row = table.new_row()
+            d_row["Workspace"] = metadata["workspace"]
+            d_row["Identifier"] = metadata["identifier"]
+            d_row["Ada Metadata"] = metadata["metatick"]
+            d_row["Akses"] = metadata["akses"]
+            d_row["Metadata Terpublikasi"] = metadata["published"]
+            d_row["downloadable"] = metadata["downloadable"]
+
+        dataset.render_to_qtable_widget("Metadata", self.table_metadata,[])
+    
+    # Check kelas admin
     def checkUser(self):
         self.kelas = readSetting("kelas")
         self.grup = readSetting("grup")
@@ -41,25 +69,19 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
             self.btn_hapus_meta.setEnabled(True)
             self.btn_publish_csw.setEnabled(True)
 
-
+    # Mendapatkan data dari table yang dipilih
     def get_selected_table(self):
-
         item = self.table_metadata.selectedItems()
-
         if(item == []):
             QtWidgets.QMessageBox.warning(
                 None, "Palapa", "Pilih metadata terlebih dahulu"
             )
             return
-
         row = item[0].row()
         dataSelect = []
-   
         for x in range(self.table_metadata.columnCount()):
             dataSelect.append(self.table_metadata.item(row,x).text())
-   
         return dataSelect
-    
 
     def refresh_grid(self):
         dataset = Dataset()
@@ -72,9 +94,9 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
         table.add_column("downloadable")
         
         response = requests.get(self.url+'/api/meta/list')
-        metaList = json.loads(response.content)
+        self.metaList = json.loads(response.content)
         
-        for metadata in metaList:
+        for metadata in self.metaList:
             d_row = table.new_row()
             d_row["Workspace"] = metadata["workspace"]
             d_row["Identifier"] = metadata["identifier"]
@@ -85,6 +107,7 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
 
         dataset.render_to_qtable_widget("Metadata", self.table_metadata,[])
     
+    #Melihat informasi metadata
     def raw_metadata(self):
         dataSelect = self.get_selected_table()
 
@@ -102,6 +125,7 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
         raw_meta = RawMetadata(dataSelect[1],dataSelect[0])
         raw_meta.show()
 
+    #Publikasi metadata ke dalam CSW
     def publikasi_csw(self):
         dataSelect = self.get_selected_table()
 
@@ -201,9 +225,18 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
             )
     
     def unggah_berkas(self):
+
         dataSelect = self.get_selected_table()
 
         if(dataSelect == None):
+            return
+
+        if(dataSelect[2] != "Y"):
+            QtWidgets.QMessageBox.information(
+                        None,
+                        "Palapa",
+                        "Data tidak memiliki metadata",
+            )
             return
 
         workspace = dataSelect[0]
@@ -216,7 +249,7 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
             )
             return
 
-        unggahBerkas = UnggahBerkas(dataSelect[1],dataSelect[0])
+        unggahBerkas = UnggahBerkas(dataSelect[1],dataSelect[0],dataSelect[0])
         unggahBerkas.show()
 
    

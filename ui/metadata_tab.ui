@@ -66,7 +66,7 @@
         <cursorShape>PointingHandCursor</cursorShape>
        </property>
        <property name="text">
-        <string>Unggah / Update 
+        <string>Update 
 Metadata XML</string>
        </property>
        <property name="icon">
@@ -147,6 +147,33 @@ Servis CSW</string>
     </layout>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QgsFilterLineEdit" name="cariMetadata">
+       <property name="placeholderText">
+        <string>Cari Metadata</string>
+       </property>
+       <property name="showSearchIcon">
+        <bool>true</bool>
+       </property>
+       <property name="qgisRelation" stdset="0">
+        <string notr="true"/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="refreshButton">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="text">
+        <string>Refresh</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QTableWidget" name="table_metadata">
      <property name="enabled">
       <bool>true</bool>
@@ -170,6 +197,13 @@ Servis CSW</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsFilterLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>qgsfilterlineedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

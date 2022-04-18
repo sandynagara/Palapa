@@ -182,13 +182,14 @@ class Worker(QThread):
             report = self.reportload('publish', False, 'Layer Gagal dipublikasikan! : '+respondJSON['MSG'])
         self.status.emit(report)
 
+    #Mengcheck tipe data layer yang diupload
     def exportLayer(self):
         layerName = self.select_layer.currentText()
         layer = QgsProject().instance().mapLayersByName(layerName)[0]
         source = layer.source()
   
         source = source.split("|")
-  
+
         tipe = source[0].split(".")[-1]
         if (tipe=="shp"):
             sourceFile = self.replacePath(source[0],".shp")
@@ -198,6 +199,7 @@ class Worker(QThread):
             sourceFile = self.replacePath(source[0],".shx")
         return sourceFile
 
+    #Menghubungkan antara data layer dan style
     def linkStyleShp(self,Lid,style):
         print(f"me-link-kan layer dengan style '{style}'")
         url = self.parameter['url'] + "/api/layers/modify"
@@ -205,7 +207,8 @@ class Worker(QThread):
         dataPublish = json.dumps(dataPublish)
         respond = requests.post(url,data=f"dataPublish={dataPublish}")
         print(respond.text)        
-        
+    
+    #Mendapatkan semua data shp (.shp,.prj,.dbf,.shx)
     def replacePath(self,source,tipeFile):
         print(tipeFile)
         shp = source.replace(tipeFile, ".shp")
@@ -224,6 +227,7 @@ class Worker(QThread):
     def minMeta(self,id):
         self.progress.emit(3.5)
         report = self.reportload('metadata', 'process', 'Mengunggah metadata . . .')
+        #Mengirim signal ke report bahwa file telah sampai tahap report
         self.status.emit(report)
 
         data = {"pubdata":{"WORKSPACE":self.parameter['grup'],
@@ -234,6 +238,8 @@ class Worker(QThread):
                 "ID":id,
                 "ABSTRACT":self.parameter['abstrack'],
                 "tanggal":self.parameter['date']}}
+
+        #Mengupload metadata
         data = json.dumps(data)
         urlMinMeta = self.parameter['url']+'/api/minmetadata'
         responseAPIMeta = requests.post(urlMinMeta,data=f"dataPublish={data}")
@@ -247,7 +253,7 @@ class Worker(QThread):
             report = self.reportload('metadata', False, 'Metadata Gagal diunggah! : '+responseAPIMetaJSON['MSG'])
         self.status.emit(report)
 
-    # upload Metadata File
+    # Upload Metadata Minimal File
     def uploadMetadata(self, Lid) :
         self.progress.emit(3.5)
         report = self.reportload('metadata', 'process', 'Mengunggah file metadata . . .')
@@ -269,6 +275,7 @@ class Worker(QThread):
             report = self.reportload('metadata', False, 'Metadata Gagal diunggah! : '+responseAPIMetaJSON['MSG'])
         self.status.emit(report)
 
+    # Upload Metadata Lengkap
     def uploadMetadataLengkap(self,Lid):
         self.progress.emit(3.5)
         report = self.reportload('metadata', 'process', 'Mengunggah file metadata . . .')

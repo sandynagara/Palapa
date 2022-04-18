@@ -38,8 +38,7 @@ class LayerPublish(QtWidgets.QDialog, FORM_CLASS):
         self.nativename = nativename
         self.tipe = tipe    
 
-        
-
+        #Menhandle publish dan unpublish data spasial
         if(self.aktif):
             self.label_layer.setText(f"Anda akan memunpublish layer {self.identifier}")
             self.label_unduh.setVisible(False)
@@ -57,11 +56,13 @@ class LayerPublish(QtWidgets.QDialog, FORM_CLASS):
     def closeTab(self):
         self.close()
 
+    #Menhandle proses publish
     def upload(self):
         self.thread = QThread()
         downloadable = self.cmb_download.currentData()
         self.label_progress.setVisible(True)
         
+        #Membedakan proses publish dan unpublish
         if(self.aktif):
             data = {"pubdata":
                 {
@@ -106,7 +107,7 @@ class LayerPublish(QtWidgets.QDialog, FORM_CLASS):
         # dataPublish = json.loads(response.content)
         # print(dataPublish)
         
-
+    #Memberitahu tahap progress publish data
     def report(self,dataPublish):
         print(dataPublish,"report")
         self.label_progress.setVisible(True)

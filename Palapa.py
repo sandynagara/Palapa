@@ -31,6 +31,7 @@ from .resources import *
 #from .ui.upload import UploadDialog
 from .module.workspace.login import LoginDialog
 from .module.workspace.upload import UploadDialog
+from .module.workspace.layer_umum import LayerUmum
 import os.path
 
 
@@ -70,8 +71,12 @@ class Palapa:
 
         self.login = LoginDialog()
         self.upload = UploadDialog()
+        self.umum = LayerUmum()
+        
         self.login.UserSignal.connect(self.openUpload)
+        self.login.UmumMasuk.connect(self.openLayer)
         self.upload.UserLogout.connect(self.logout)
+        self.umum.UserLogout.connect(self.logout)
         self.LoggedIn = False        
 
         # Check if plugin was started the first time in current QGIS session
@@ -162,8 +167,10 @@ class Palapa:
             self.first_start = False
         if self.LoggedIn == False:
             self.login.show()
-        elif self.LoggedIn == True:
+        elif self.LoggedIn == "upload":
             self.upload.show()
+        elif self.LoggedIn == "umum":
+            self.umum.show()
         # # show the dialog
         # # Run the dialog event loop
         # result = self.login.exec_()
@@ -172,9 +179,14 @@ class Palapa:
         #     # Do something useful here - delete the line containing pass and
         #     # substitute with your code.
         #     pass
+    def openLayer(self):
+        self.LoggedIn = "umum"
+        self.login.close()
+        self.umum.show()
+        self.umum.refresh_grid()
     
     def openUpload(self,payload):
-        self.LoggedIn = True
+        self.LoggedIn = "upload"
         self.login.close()
         self.upload.checkUser()       
         self.upload.show()
@@ -182,5 +194,6 @@ class Palapa:
 
     def logout(self):
         self.LoggedIn = False
-        self.upload.close()        
+        self.upload.close()   
+        self.umum.close()       
         self.login.show()

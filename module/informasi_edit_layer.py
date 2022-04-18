@@ -7,6 +7,7 @@ from qgis.PyQt import QtWidgets
 from qgis.utils import iface
 from .utils import readSetting
 from PyQt5.QtCore import pyqtSignal,QThread
+from qgis.core import QgsVectorLayer,QgsProject
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -23,6 +24,7 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
         self.nativeName = nativeName
         self.aktif = aktif
         self.tipeLayer = tipeLayer
+        self.title = title
 
         self.lineEdit_id.setText(id)
         self.lineEdit_title.setText(title)
@@ -31,17 +33,19 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
 
         self.url = readSetting("url")
 
+        #Mendownloa daftar style
         urlStyle= self.url+"/api/getstyles"
         response = requests.get(urlStyle)
         DaftarStyle = json.loads(response.content)
+        #Memasuukan style ke dalam combo box
         for style in DaftarStyle:
             self.cmb_style.addItem(style['name'])
 
-        print(styleInput)
-
+        #Mensetting combox box agar sesuai dengan yang dipilih user
         indexSytle = self.cmb_style.findText(styleInput)
         self.cmb_style.setCurrentIndex(indexSytle)
 
+        #Mensetting agar id dan srs tidak bisa diedit
         self.lineEdit_id.setReadOnly(True)
         self.lineEdit_srs.setReadOnly(True)
 
@@ -54,10 +58,36 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
 
         self.btn_tutup.clicked.connect(self.closeTab)
         self.btn_save.clicked.connect(self.updateLayer)
+        self.download_layer.clicked.connect(self.downloadLayer)
 
+    # Mengandle tombol close
     def closeTab(self):
         self.close()
 
+    # Mengimport layer ke dalam QGIS
+    def downloadLayer(self):
+        try:
+            # Mengatur url 
+            uri = f'{self.url}/geoserver/wms?service=WFS&version=1.0.0&request=GetFeature&typeName={self.nativeName}'
+            # Menmassukan layer ka dalam QGIS sebagai layanan WFS
+            layer = QgsVectorLayer(uri, self.title, "WFS")
+            print(layer,"layer")
+            QgsProject.instance().addMapLayer(layer)
+            if not layer.isValid():
+                print("Layer failed to load!")
+            iface.actionZoomToLayer().trigger()
+            QtWidgets.QMessageBox.information(
+                    None,
+                    "Palapa",
+                    "Layer berhasil di import",
+            )
+        except Exception as err:
+            print(err)
+            QtWidgets.QMessageBox.warning(
+                None, "Palapa", "Layer gagal di import"
+            )
+
+    # Handle update informasi layer
     def updateLayer(self):
         self.thread = QThread()
         id = self.lineEdit_id.text()
@@ -68,6 +98,7 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
         dataPublish = {"pubdata":{"id": id,"aktif":self.aktif, "tipe": self.tipeLayer,"abstract":abstract,"nativename":self.nativeName,"style":style,"title":title}}
         dataPublish = json.dumps(dataPublish)
 
+        #Memindahkan proses update ke dalam Thread untuk menghindari freeze
         self.worker = Worker(dataPublish,self.url)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
@@ -77,7 +108,7 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
         self.thread.finished.connect(self.thread.deleteLater)
         self.worker.finished.connect(self.report)
 
-
+    #Menampilkan progress updating
     def report(self,dataPublish):
         self.label_progress.setVisible(True)
         self.close()

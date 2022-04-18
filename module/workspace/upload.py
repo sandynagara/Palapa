@@ -69,27 +69,29 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.ReportDlg = ReportDialog()
         self.changeMeta()
         self.setup_workpanel()
-        #self.LoginDialog = LoginDialog
-        #self.LoginDialog.UserSignal.connect(self.UserParam)
 
     def setup_workpanel(self):
-        # self._main_dock = self.stackedWidget.findChild(QtWidgets.QWidget, "main_dock")
-        # self._main_tab = self._main_dock.findChild(QtWidgets.QWidget, "main_tab")
+        
+        # Inialisasi kelas
         self.publikasiPanel = Publikasi()
         self.metadataPanel = Metadata()
         self.registerService = RegisterService()
 
+        # Menambahkan tab publikasi,metadata,register service ke tab upload
         self._main_tab.addTab(self.publikasiPanel, "Publkasi")
         self._main_tab.addTab(self.metadataPanel, "Metadata")
         self._main_tab.addTab(self.registerService, "Register Service")
 
+        # Handle daftar table ketika menambahkan data melalui register service
         self.registerService.refresh.connect(self.refreshMetadata)
-
+    
+    # Handle ketika ada perubahan user yang melakukan login
     def checkUser(self):
         self.publikasiPanel.checkUser()
         self.metadataPanel.checkUser()
         self.registerService.checkUser()
-        
+    
+    # Handle ketika ada perubahan input metadata 
     def changeMeta(self):
         if(self.radioButton_meta_lengkap.isChecked()):
             self.meta_lengkap.setVisible(True) 
@@ -107,11 +109,13 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
             self.pushButton_clearMetadata.setVisible(False) 
             self.meta_lengkap.setVisible(False) 
 
+    # Merubah judul teks ketika ada perubahan layer yang dipilih
     def changeTitle(self):
         layerName = self.select_layer.currentText()
         self.lineEdit_layertitle.setText(layerName)
         self.metadataForm = MetadataForm(layerName)
 
+    # Memasukkan parameter ke dalam class upload
     def UserParam(self, signalpayload):
         print('signal nangkep',signalpayload)
         self.grup = signalpayload['grup']
@@ -125,6 +129,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         responseKeyword = requests.get(urlKeyword)
         self.comboBox_constraint.setCurrentIndex(0)
         self.comboBox_keyword.clear()
+        # Memasukkan kayword ke dalam combo box keyword
         storeSetting("keyword",responseKeyword.json())
         for x in responseKeyword.json():
             self.comboBox_keyword.addItem(x['keyword'])
@@ -132,6 +137,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.metadataForm = MetadataForm(layerName)
         print(signalpayload)
     
+    # Handle logout
     def logout(self):
         self.UserLogout.emit()
 
@@ -146,8 +152,15 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
             print('masukkan SLD atau gunakan sld bawaan')
         else:
             layerPath = self.exportLayer()
+            if(layerPath == False):
+                self.report(self.label_statusbase, 'reset', '')
+                QtWidgets.QMessageBox.warning(
+                None, "Palapa", "Layer tidak berformat SHP"
+                )
+                return
             # define layer parameter
             self.LayerParams = layerPath
+            # Handle check apakah file shp tersebut ada atau tidak
             if self.checkFileExist(layerPath['shp']) and self.checkFileExist(layerPath['dbf']) and self.checkFileExist(layerPath['shx']) and self.checkFileExist(layerPath['prj']) :
                 print("file Lengkap")
                 if(self.radioButton_StyleQgis.isChecked()):      
@@ -158,17 +171,18 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
                     sldPath = self.pathSLD
                 # define SLD parameter
                 self.filesSld = {'file': open(sldPath,'rb')}
-                print(self.filesSld, "fileSLD")
                 if (self.pathMeta is not None and self.pathMeta != ''):
                     print('metajalan',self.pathMeta)         
                     self.MetaRun = True
                 self.filesSld['file'].close()
                 self.report(self.label_statusbase, True, 'Data lengkap, mulai mengunggah . . .')
+                #Melakukan uploading
                 self.runUpload()
             else :
                 print("file Tidak Lengkap")
                 self.report(self.label_statusbase, False, 'File tidak lengkap')
 
+    # Handle upload file shp ke dalam geoportal 
     def runUpload(self,sldName=False):
         self.thread = QThread()
         title = self.lineEdit_layertitle.text()
@@ -193,14 +207,16 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
                 "keyword":keyword,
                 "akses":akses}
 
+        # Check metadata yang digunakan
         if(self.radioButton_meta_lengkap.isChecked()):
             data["metadataLengkap"] = self.metadataForm.getMetadata()
         else:
             data["metadataLengkap"] = None
 
+        # Memindahkan proses upload ke dalam Thread untuk menghindari freeze
         self.worker = Worker(data,sldName)
         self.worker.sldRename.connect(self.sldRename)
-        self.worker.moveToThread(self.thread) # move Worker-Class to a thread
+        self.worker.moveToThread(self.thread) 
         # Connect signals and slots:
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
@@ -219,6 +235,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.thread.finished.connect(lambda: self.ReportDlg.accept.setEnabled(True))
         # enable the start-thread button when thread has been finished    
 
+    #Handle enable button untuk login
     def enable_button(self,enable):
         if (enable):
             self.pushButton_logout.setEnabled(True)
@@ -227,6 +244,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
             self.pushButton_logout.setEnabled(False)
             self.upload.setEnabled(False)               
 
+    #Handle untuk sld dengan nama yang sama
     def sldRename(self,pathSld):
         print("SLD Rename")
         self.ReportDlg.hide()
@@ -251,13 +269,14 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         lyrCRS = layer.crs().authid()
         print(lyrCRS)
     
+    #Mencari path dari file yang dipilih
     def exportLayer(self):
         layerName = self.select_layer.currentText()
         layer = QgsProject().instance().mapLayersByName(layerName)[0]
         source = layer.source()
   
         source = source.split("|")
-  
+        sourceFile = False
         tipe = source[0].split(".")[-1]
         if (tipe=="shp"):
             sourceFile = self.replacePath(source[0],".shp")
@@ -265,8 +284,10 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
             sourceFile = self.replacePath(source[0],".dbf")
         elif (tipe=="shx"):
             sourceFile = self.replacePath(source[0],".shx")
+    
         return sourceFile
 
+    #mencari 4 tipe file yang dibutuhkan dalam shp
     def replacePath(self,source,tipeFile):
         print(tipeFile)
         shp = source.replace(tipeFile, ".shp")
@@ -281,6 +302,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         print(sourceFile)
         return sourceFile
     
+    #Check file apakah ada atau tidak
     def checkFileExist(self,filePath):
         fileExist = True
         if os.path.isfile(filePath):
@@ -291,6 +313,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
             fileExist = False
         return fileExist
 
+    #Export sld dari layer yang dipih
     def exportSld(self):
         layerName = self.select_layer.currentText()
         layer = QgsProject().instance().mapLayersByName(layerName)[0]
@@ -307,13 +330,15 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         layer.saveSldStyle(sldPath)
         return sldPath
     
+    #Mencari metadata dari local computer
     def start_browse_metadata(self):
         filter = "XML files (*.xml)"
         filename1, _ = QFileDialog.getOpenFileName(None, "Import XML", "",filter)
         print(filename1)
         self.lineEdit_metadata.setText(filename1)
         self.pathMeta = filename1
-        
+    
+    #Mencari sld dari local computer
     def start_browse_style(self):
         filter = "SLD files (*.sld)"
         filePath, _ = QFileDialog.getOpenFileName(None, "Import SLD", "",filter)
@@ -321,10 +346,12 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.lineEdit_style.setText(filePath)
         self.pathSLD = filePath
 
+    #Pengisian metadata lengkap
     def isi_metadata_lengkap(self):
         self.metadataForm.show()
         constraint =  self.comboBox_constraint.currentText()
         self.metadataForm.setKeyword(constraint)
+
     # report upload
     def report(self, label, result, message):
         if result is True:
