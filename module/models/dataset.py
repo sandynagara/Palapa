@@ -26,7 +26,6 @@ class DataRow(dict):
             key = self._column_list[key]
         return super().__getitem__(key)
 
-
 class DataTable:
     def __init__(self):
         self._rows = []
@@ -117,7 +116,6 @@ class DataTable:
                 self._table_widget[uid].setColumnHidden(index, True)
 
             return selected
-
 
 class Dataset(dict):
     def __init__(self, data={}):

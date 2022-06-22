@@ -135,8 +135,9 @@ class Worker(QThread):
     def __init__(self, data, url ,sldName=False):
         super(QThread, self).__init__()
         #print('workerinit')
-        self.stopworker = False # initialize the stop variable
-
+        self.stopworker = False 
+        
+        # initialize the stop variable
         self.url = url
         self.data = data
 
