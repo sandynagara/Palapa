@@ -41,7 +41,6 @@ class RegisterService(QtWidgets.QDialog, FORM_CLASS):
     def upload(self):   
         alamatService = self.lineEdit_alamat.text()
         titleService = self.lineEdit_title.text()
-        abstrack = self.textEdit_abstrak.toPlainText()
         tanggal = self.date_tanggal.dateTime()
         tanggal = tanggal.toString("ddd MMM dd yyyy HH:mm:ss")
         keyword = self.cmb_keyword.currentText()

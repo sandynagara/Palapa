@@ -23,19 +23,20 @@ class MetadataForm(QtWidgets.QDialog, FORM_CLASS):
 
         self.pushButton_save.clicked.connect(self.save)
        
-        self.input_name_distributor.setText(self.system["organization"])
-        self.input_organisation_distributor.setText(self.system["organization"])
-        self.input_position_distributor.setText(self.system["organization"])
-        self.input_phone_distributor.setText(self.system["phone"])
-        self.input_fax_distributor.setText(self.system["fax"])
-        self.input_delivery_distributor.setText(self.system["address"])
-        self.input_email_distributor.setText(self.system["email"])
-        self.input_country_distributor.setText(self.system["country"])
-        self.input_linkage_distributor.setText(self.system["url"])
-        self.input_house_distributor.setText(self.system["hoursofservice"])
-        self.input_contact_distributor.setText(self.system["contactinstruction"])
-        self.input_city_distributor.setText(self.system["city"])
-        self.input_postal_distributor.setText(self.system["postalcode"])
+        if(self.system["organization"]):
+            self.input_name_distributor.setText(self.system["organization"])
+            self.input_organisation_distributor.setText(self.system["organization"])
+            self.input_position_distributor.setText(self.system["organization"])
+            self.input_phone_distributor.setText(self.system["phone"])
+            self.input_fax_distributor.setText(self.system["fax"])
+            self.input_delivery_distributor.setText(self.system["address"])
+            self.input_email_distributor.setText(self.system["email"])
+            self.input_country_distributor.setText(self.system["country"])
+            self.input_linkage_distributor.setText(self.system["url"])
+            self.input_house_distributor.setText(self.system["hoursofservice"])
+            self.input_contact_distributor.setText(self.system["contactinstruction"])
+            self.input_city_distributor.setText(self.system["city"])
+            self.input_postal_distributor.setText(self.system["postalcode"])
 
         self.input_title_identification.setText(title)
 

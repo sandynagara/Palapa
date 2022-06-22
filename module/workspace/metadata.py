@@ -214,7 +214,7 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
                     "Palapa",
                     hapusCsw["MSG"],
             )
-            print(hapusCsw)
+            
             self.refresh_grid()
 
         except:

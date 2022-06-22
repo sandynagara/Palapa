@@ -21,7 +21,6 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
     def __init__(self, parent=iface.mainWindow()): 
         super(Publikasi, self).__init__(parent)
         self.setupUi(self)
-
         self.btn_informasi.clicked.connect(self.informasi)
         self.btn_edit.clicked.connect(self.edit)
         self.btn_publikasi.clicked.connect(self.publikasi)
@@ -33,7 +32,6 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
     def findLayer(self):
         textto_find = self.cariLayer.value()
         result = [x for x in self.layerSpasial if x["layer_name"].lower().startswith(textto_find.lower())]
-        print(textto_find)
         dataset = Dataset()
         table = dataset.add_table("Publikasi")
         table.add_column("identifier")
@@ -159,6 +157,7 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
             layerPublish = LayerPublish(id,title,abstrack,aktif,advertised,style,nativename,tipe)
             layerPublish.show()
             layerPublish.refresh.connect(self.refresh_grid)
+            
         except Exception as err:
             print(err)
          
@@ -184,21 +183,15 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
     # Menhapus layer
     def hapus(self):
         self.thread = QThread()
-
         dataSelect = self.get_selected_table()
-
         if(dataSelect == None):
             return
-
         id = dataSelect[0]
         workspace = dataSelect[2]
-
         prmpt = f"Anda akan menghapus layer {id}"
         result = QtWidgets.QMessageBox.question(self, "Perhatian", prmpt)
-
         if(result != QtWidgets.QMessageBox.Yes):
             return
-
         data = {"pubdata":
                     {
                     "layer": id, 
@@ -206,7 +199,6 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
                     }
                 }
         data = json.dumps(data)
-
         #Memindahkan proses hapus data ke dalam thread
         self.worker = Worker(data,self.url)
         self.worker.moveToThread(self.thread)
@@ -265,12 +257,11 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
 class Worker(QThread):
 
     finished = pyqtSignal(object)
-    
     def __init__(self, data, url):
         super(QThread, self).__init__()
         #print('workerinit')
-        self.stopworker = False # initialize the stop variable
-
+        self.stopworker = False
+        #initialize the stop variable
         self.url = url
         self.data = data
 

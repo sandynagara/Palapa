@@ -34,7 +34,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         super(UploadDialog, self).__init__(parent)
         self.setupUi(self)
         self.login = LoginDialog()
-     
         # self.login.UserSignal.connect(self.UserParam)
         self.enable_button(True)
         self.upload.clicked.connect(self.checking)
@@ -117,7 +116,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
 
     # Memasukkan parameter ke dalam class upload
     def UserParam(self, signalpayload):
-        print('signal nangkep',signalpayload)
         self.grup = signalpayload['grup']
         self.user = signalpayload['user']
         self.url = signalpayload['url']
@@ -205,7 +203,8 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
                 "MetaRun":self.MetaRun,
                 "date":tanggal,
                 "keyword":keyword,
-                "akses":akses}
+                "akses":akses
+                }
 
         # Check metadata yang digunakan
         if(self.radioButton_meta_lengkap.isChecked()):
@@ -274,7 +273,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         layerName = self.select_layer.currentText()
         layer = QgsProject().instance().mapLayersByName(layerName)[0]
         source = layer.source()
-  
         source = source.split("|")
         sourceFile = False
         tipe = source[0].split(".")[-1]

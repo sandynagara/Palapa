@@ -7,7 +7,7 @@ from qgis.PyQt import QtWidgets
 from qgis.utils import iface
 from .utils import readSetting
 from PyQt5.QtCore import pyqtSignal,QThread
-from qgis.core import QgsVectorLayer,QgsProject
+from qgis.core import QgsVectorLayer,QgsProject,QgsDataSourceUri
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -24,6 +24,7 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
         self.nativeName = nativeName
         self.aktif = aktif
         self.tipeLayer = tipeLayer
+        self.tipe = tipe
         self.title = title
 
         self.lineEdit_id.setText(id)
@@ -32,6 +33,8 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
         self.lineEdit_srs.setText(srs)
 
         self.url = readSetting("url")
+        self.user = readSetting("user")
+        self.password = readSetting("password")
 
         #Mendownloa daftar style
         urlStyle= self.url+"/api/getstyles"
@@ -49,7 +52,8 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
         self.lineEdit_id.setReadOnly(True)
         self.lineEdit_srs.setReadOnly(True)
 
-        if(tipe == "info"):
+        if(self.tipe == "info"):
+            self.download_layer.setText("Lihat Layer")
             self.lineEdit_title.setReadOnly(True)
             self.textEdit_abstract.setReadOnly(True)
             self.lineEdit_srs.setReadOnly(True)
@@ -68,9 +72,23 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
     def downloadLayer(self):
         try:
             # Mengatur url 
-            uri = f'{self.url}/geoserver/wms?service=WFS&version=1.0.0&request=GetFeature&typeName={self.nativeName}'
+            uri = QgsDataSourceUri()
+            if(self.tipe == "info"):  
+                uri = f'{self.url}/geoserver/wms?service=WFS&version=1.0.0&request=GetFeature&typeName={self.nativeName}'
+                layer = QgsVectorLayer(uri, self.title, "WFS")
+            else:
+                uri.setParam('typename', self.nativeName)
+                uri.setParam('srsName', 'EPSG:4326')
+                uri.setParam('service', 'WFS')
+                uri.setParam('version', '1.0.0')
+                uri.setParam('request', 'GetFeature')
+                uri.setUsername(self.user)
+                uri.setPassword(self.password)
+                uri.setParam('url', f'{self.url}/geoserver/wms')
+                layer = QgsVectorLayer(uri.uri(), self.title, "WFS")
+              
             # Menmassukan layer ka dalam QGIS sebagai layanan WFS
-            layer = QgsVectorLayer(uri, self.title, "WFS")
+            
             print(layer,"layer")
             QgsProject.instance().addMapLayer(layer)
             if not layer.isValid():

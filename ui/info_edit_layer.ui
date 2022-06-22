@@ -20,7 +20,7 @@
       <cursorShape>PointingHandCursor</cursorShape>
      </property>
      <property name="text">
-      <string>Import Layer</string>
+      <string>Edit Data</string>
      </property>
     </widget>
    </item>

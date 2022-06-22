@@ -181,8 +181,6 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         user=self.lineEdit_username.text()
         password=self.lineEdit_password.text()
 
-        
-
         login_payload = {"username": user, "password": password}
         login_json = json.dumps(login_payload)
 
@@ -207,6 +205,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                         self.grup = responseApiJson['grup']
                         self.user = responseApiJson['user']
                         self.kelas = responseApiJson['kelas']
+                        
                         self.url = url
                         # Mengambil data terkait geoportal
                         responseSimpul = requests.get(self.url+'/api/sisteminfo')
@@ -219,6 +218,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                         storeSetting("kodesimpul",self.simpulJaringan)
                         storeSetting("grup", self.grup)
                         storeSetting("kelas", self.kelas)
+                        storeSetting("password", self.lineEdit_password.text())
                         
                         # Mengirim signal yang berisi payload kepada palapa.py
                         signalsend = {"grup": self.grup, "user": self.user, "url": self.url, "kodesimpul": self.simpulJaringan}

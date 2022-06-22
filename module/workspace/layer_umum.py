@@ -5,7 +5,7 @@ import requests
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.utils import iface
-from PyQt5.QtCore import pyqtSignal,QThread
+from PyQt5.QtCore import pyqtSignal
 from qgis.core import QgsVectorLayer,QgsProject
 
 from ..utils import readSetting
@@ -77,7 +77,6 @@ class LayerUmum(QtWidgets.QDialog, FORM_CLASS):
         nativename = dataSelect[9]
 
         try:
-
             uri = f'{self.url}/geoserver/wms?service=WFS&version=1.0.0&request=GetFeature&typeName={nativename}'
             layer = QgsVectorLayer(uri, title, "WFS")
             QgsProject.instance().addMapLayer(layer)
