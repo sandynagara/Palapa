@@ -131,7 +131,7 @@ class Palapa:
                 self.menu,
                 action)
 
-        self.actions.append(action)
+        self.actions.append(action) 
 
         return action
 
