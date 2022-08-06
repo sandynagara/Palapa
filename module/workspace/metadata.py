@@ -84,28 +84,35 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
         return dataSelect
 
     def refresh_grid(self):
-        dataset = Dataset()
-        table = dataset.add_table("Metadata")
-        table.add_column("Workspace")
-        table.add_column("Identifier")
-        table.add_column("Ada Metadata")
-        table.add_column("Akses")
-        table.add_column("Metadata Terpublikasi")
-        table.add_column("downloadable")
-        
-        response = requests.get(self.url+'/api/meta/list')
-        self.metaList = json.loads(response.content)
-        
-        for metadata in self.metaList:
-            d_row = table.new_row()
-            d_row["Workspace"] = metadata["workspace"]
-            d_row["Identifier"] = metadata["identifier"]
-            d_row["Ada Metadata"] = metadata["metatick"]
-            d_row["Akses"] = metadata["akses"]
-            d_row["Metadata Terpublikasi"] = metadata["published"]
-            d_row["downloadable"] = metadata["downloadable"]
+        try:
+            dataset = Dataset()
+            table = dataset.add_table("Metadata")
+            table.add_column("Workspace")
+            table.add_column("Identifier")
+            table.add_column("Ada Metadata")
+            table.add_column("Akses")
+            table.add_column("Metadata Terpublikasi")
+            table.add_column("downloadable")
+            
+            response = requests.get(self.url+'/api/meta/list')
+            self.metaList = json.loads(response.content)
+            
+            for metadata in self.metaList:
+                d_row = table.new_row()
+                d_row["Workspace"] = metadata["workspace"]
+                d_row["Identifier"] = metadata["identifier"]
+                d_row["Ada Metadata"] = metadata["metatick"]
+                d_row["Akses"] = metadata["akses"]
+                d_row["Metadata Terpublikasi"] = metadata["published"]
+                d_row["downloadable"] = metadata["downloadable"]
 
-        dataset.render_to_qtable_widget("Metadata", self.table_metadata,[])
+            dataset.render_to_qtable_widget("Metadata", self.table_metadata,[])
+        except Exception as err:
+            QtWidgets.QMessageBox.information(
+                None,
+                "Palapa",
+                "Gagal mendapatkan daftar metadata. Silahkan periksa koneksi internet anda",
+            )
     
     #Melihat informasi metadata
     def raw_metadata(self):
@@ -123,7 +130,7 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
             return
 
         raw_meta = RawMetadata(dataSelect[1],dataSelect[0])
-        raw_meta.show()
+        raw_meta.setup_workspace()
 
     #Publikasi metadata ke dalam CSW
     def publikasi_csw(self):
@@ -250,7 +257,7 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
             return
 
         unggahBerkas = UnggahBerkas(dataSelect[1],dataSelect[0],dataSelect[0])
-        unggahBerkas.show()
+        unggahBerkas.setup_workspace()
 
    
 

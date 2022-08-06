@@ -29,13 +29,6 @@ class UnggahBerkas(QtWidgets.QDialog, FORM_CLASS):
             self.cmb_keyword.addItem(x['keyword'])
         self.workspace = workspace
 
-        self.setup_workspace()
-        self.pushButton_save.clicked.connect(self.submit_edit)
-        self.pushButton_close.clicked.connect(self.closeTab)
-
-        self.browse_metadata.clicked.connect(self.start_browse_metadata)
-        self.btn_update.clicked.connect(self.upload)
-        self.btn_tutup.clicked.connect(self.closeTab)
         self.pushButton_save.clicked.connect(self.submit_edit)
         self.pushButton_close.clicked.connect(self.closeTab)
 
@@ -51,10 +44,19 @@ class UnggahBerkas(QtWidgets.QDialog, FORM_CLASS):
     def setup_workspace(self):
         if self.url is None:
             return
-            
-        params = {"identifier":self.identifer}
-        response = requests.get(self.url+'/api/meta/view_json',params=params)
-        metaView = json.loads(response.content)
+
+        try:
+            params = {"identifier":self.identifer}
+            response = requests.get(self.url+'/api/meta/view_json',params=params)
+            metaView = json.loads(response.content)
+        except Exception as err:
+            self.close()
+            QtWidgets.QMessageBox.information(
+                None,
+                "Palapa",
+                "Gagal mendapatkan informasi metadata. Silahkan periksa koneksi internet anda",
+            )
+            return
 
         try:
             self.tanggalku = metaView["gmd:MD_Metadata"]["gmd:dateStamp"]["gco:DateTime"]
@@ -253,6 +255,8 @@ class UnggahBerkas(QtWidgets.QDialog, FORM_CLASS):
         self.input_contact_distributor.setText(self.Distributor_contactInstructions)
         self.input_city_distributor.setText(self.Distributor_city)
         self.input_postal_distributor.setText(self.Distributor_postalCode)
+
+        self.open()
 
     #Mengedit metadata
     def submit_edit(self):

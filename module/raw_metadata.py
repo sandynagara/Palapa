@@ -26,20 +26,25 @@ class RawMetadata(QtWidgets.QDialog, FORM_CLASS):
         self.identifer = identifer
         self.workspace = workspace
 
-        print(self.identifer,type(identifer))
-        self.setup_workspace()
-
-
     def setup_workspace(self):
 
         self.url = readSetting("url")
 
         if self.url is None:
             return
-            
-        params = {"identifier":self.identifer}
-        response = requests.get(self.url+'/api/meta/view_json',params=params)
-        metaView = json.loads(response.content)
+
+        try:
+            params = {"identifier":self.identifer}
+            response = requests.get(self.url+'/api/meta/view_json',params=params)
+            metaView = json.loads(response.content)
+        except Exception as err:
+            self.close()
+            QtWidgets.QMessageBox.information(
+                None,
+                "Palapa",
+                "Gagal mendapatkan informasi metadata. Silahkan periksa koneksi internet anda",
+            )
+            return
 
         try:
             self.tanggalku = metaView["gmd:MD_Metadata"]["gmd:dateStamp"]["gco:DateTime"]
@@ -238,6 +243,8 @@ class RawMetadata(QtWidgets.QDialog, FORM_CLASS):
         self.input_contact_distributor.setText(self.Distributor_contactInstructions)
         self.input_city_distributor.setText(self.Distributor_city)
         self.input_postal_distributor.setText(self.Distributor_postalCode)
+
+        self.open()
 
 
 

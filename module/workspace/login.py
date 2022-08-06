@@ -154,7 +154,6 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
     # Handle masuk geoportal untuk umum
     def masuk(self):
         url=self.lineEdit_url_2.text()
-        print(url+'/api/sisteminfo')
         try:
             # Check geoportal valid atau tidak
             responseSimpul = requests.get(url+'/api/sisteminfo')
@@ -168,8 +167,8 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         except Exception as err:
             # Handle geoportal tidak valid
             print(err)
-            self.label_status.setStyleSheet("color: white; background-color: #C4392A; border-radius: 4px;")
-            self.label_status.setText('Cek URL atau koneksi internet Anda')
+            self.label_status_2.setStyleSheet("color: white; background-color: #C4392A; border-radius: 4px;")
+            self.label_status_2.setText('Cek URL atau koneksi internet Anda')
 
     # Handle masuk geoportal untuk admin
     def runConnectionTest(self):

@@ -1,5 +1,5 @@
 <RCC>
-  <qresource prefix="/plugins/Plugin-upload-Palapa">
-    <file>icon.png</file>
+  <qresource prefix="tes">
+    <file alias="upload">img/upload-1.1s-200px.png</file>
   </qresource>
 </RCC>

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>334</height>
+    <width>454</width>
+    <height>392</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -99,13 +99,16 @@
        </property>
        <property name="icon">
         <iconset>
-         <normaloff>../img/upload-1.1s-200px.png</normaloff>../img/upload-1.1s-200px.png</iconset>
+         <normaloff>../img/upload .jpg.png</normaloff>../img/upload .jpg.png</iconset>
        </property>
        <property name="iconSize">
         <size>
          <width>35</width>
          <height>35</height>
         </size>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
        </property>
        <property name="toolButtonStyle">
         <enum>Qt::ToolButtonTextUnderIcon</enum>
@@ -192,6 +195,8 @@
    <header>qgsfilterlineedit.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../img/coba.py"/>
+ </resources>
  <connections/>
 </ui>

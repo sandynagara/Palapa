@@ -61,6 +61,8 @@ class LayerPublish(QtWidgets.QDialog, FORM_CLASS):
         self.thread = QThread()
         downloadable = self.cmb_download.currentData()
         self.label_progress.setVisible(True)
+   
+        self.label_progress.setStyleSheet("color: white; background-color: #4AA252; border-radius: 4px;padding:4px")
         
         #Membedakan proses publish dan unpublish
         if(self.aktif):
@@ -77,6 +79,7 @@ class LayerPublish(QtWidgets.QDialog, FORM_CLASS):
                 "tipe":self.tipe,
                 }
             }
+            self.label_progress.setText("Layer sedang diunpublish")
         else:
             data = {"pubdata":
                 {
@@ -91,9 +94,10 @@ class LayerPublish(QtWidgets.QDialog, FORM_CLASS):
                 "tipe":self.tipe,
                 }
             }
+            self.label_progress.setText("Layer sedang dipublish")
         data = json.dumps(data)
 
-        self.worker = Worker(data,self.url)
+        self.worker = Worker(data,self.url,self.aktif)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
         self.thread.start()
@@ -109,9 +113,13 @@ class LayerPublish(QtWidgets.QDialog, FORM_CLASS):
         
     #Memberitahu tahap progress publish data
     def report(self,dataPublish):
-        print(dataPublish,"report")
         self.label_progress.setVisible(True)
+
         self.close()
+
+        if(dataPublish == False):
+            return
+
         if(dataPublish["RTN"]):
             QtWidgets.QMessageBox.information(
                 None,
@@ -119,7 +127,6 @@ class LayerPublish(QtWidgets.QDialog, FORM_CLASS):
                 dataPublish["MSG"],
             )
             self.refresh.emit()
-        
         else:
             QtWidgets.QMessageBox.information(
                 None,
@@ -132,7 +139,7 @@ class Worker(QThread):
 
     finished = pyqtSignal(object)
     
-    def __init__(self, data, url ,sldName=False):
+    def __init__(self, data, url ,aktif):
         super(QThread, self).__init__()
         #print('workerinit')
         self.stopworker = False 
@@ -140,12 +147,31 @@ class Worker(QThread):
         # initialize the stop variable
         self.url = url
         self.data = data
+        self.aktif = aktif
 
     def run(self):
         """Long-running task."""
         urlUpload = self.url + "/api/layer/adv"
-        response = requests.post(urlUpload,data=f"dataPublish={self.data}")
-        print(response)
-        dataPublish = json.loads(response.content)
-        print(dataPublish)
-        self.finished.emit(dataPublish)
+        try:
+            response = requests.post(urlUpload,data=f"dataPublish={self.data}")
+            dataPublish = json.loads(response.content)
+            self.finished.emit(dataPublish)
+        except Exception as err:
+            if(self.aktif):
+                QtWidgets.QMessageBox.information(
+                    None,
+                    "Palapa",
+                    "Layer gagal diunpublish",
+                )
+            else:
+                QtWidgets.QMessageBox.information(
+                    None,
+                    "Palapa",
+                    "Layer gagal dipublish",
+                )
+            self.finished.emit(False)
+
+          
+        
+       
+        

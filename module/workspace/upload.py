@@ -74,21 +74,18 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
         # Inialisasi kelas
         self.publikasiPanel = Publikasi()
         self.metadataPanel = Metadata()
-        self.registerService = RegisterService()
 
         # Menambahkan tab publikasi,metadata,register service ke tab upload
         self._main_tab.addTab(self.publikasiPanel, "Publkasi")
         self._main_tab.addTab(self.metadataPanel, "Metadata")
-        self._main_tab.addTab(self.registerService, "Register Service")
 
         # Handle daftar table ketika menambahkan data melalui register service
-        self.registerService.refresh.connect(self.refreshMetadata)
+    
     
     # Handle ketika ada perubahan user yang melakukan login
     def checkUser(self):
         self.publikasiPanel.checkUser()
         self.metadataPanel.checkUser()
-        self.registerService.checkUser()
     
     # Handle ketika ada perubahan input metadata 
     def changeMeta(self):
@@ -139,7 +136,7 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
     def logout(self):
         self.UserLogout.emit()
 
-    ### Cek kelengkapan
+    # Cek kelengkapan
     def checking(self):
         self.checkEPSG()
         self.ReportDlg.reportReset()
@@ -287,7 +284,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
 
     #mencari 4 tipe file yang dibutuhkan dalam shp
     def replacePath(self,source,tipeFile):
-        print(tipeFile)
         shp = source.replace(tipeFile, ".shp")
         shp = shp.replace("\\", "/")
         prj = source.replace(tipeFile, ".prj")
@@ -332,7 +328,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
     def start_browse_metadata(self):
         filter = "XML files (*.xml)"
         filename1, _ = QFileDialog.getOpenFileName(None, "Import XML", "",filter)
-        print(filename1)
         self.lineEdit_metadata.setText(filename1)
         self.pathMeta = filename1
     
@@ -340,7 +335,6 @@ class UploadDialog(QtWidgets.QDialog, FORM_CLASS):
     def start_browse_style(self):
         filter = "SLD files (*.sld)"
         filePath, _ = QFileDialog.getOpenFileName(None, "Import SLD", "",filter)
-        print(filePath)
         self.lineEdit_style.setText(filePath)
         self.pathSLD = filePath
 

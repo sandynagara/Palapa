@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>461</width>
+    <width>487</width>
     <height>438</height>
    </rect>
   </property>
@@ -37,7 +37,7 @@
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>Raw XML Metadata</string>
+        <string>Informasi Metadata</string>
        </property>
        <property name="icon">
         <iconset>
@@ -67,7 +67,7 @@
        </property>
        <property name="text">
         <string>Update 
-Metadata XML</string>
+Metadata</string>
        </property>
        <property name="icon">
         <iconset>

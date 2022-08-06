@@ -20,7 +20,6 @@ class InformasiLayer(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
         self._rows = []
         self.identifer = identifer
-        self.setup_workspace()
 
     def setup_workspace(self):
 
@@ -30,9 +29,17 @@ class InformasiLayer(QtWidgets.QDialog, FORM_CLASS):
             return
         
         #Mendapatkan metadata dari service CSW
-        response = requests.get(self.url+f'/csw?service=CSW&version=2.0.2&request=GetRecordById&ElementSetName=full&Id={self.identifer}&outputSchema=http://www.isotc211.org/2005/gmd&outputFormat=application/json')
-        metaView = json.loads(response.content)
-        print(metaView)
+        try:
+            response = requests.get(self.url+f'/csw?service=CSW&version=2.0.2&request=GetRecordById&ElementSetName=full&Id={self.identifer}&outputSchema=http://www.isotc211.org/2005/gmd&outputFormat=application/json')
+            metaView = json.loads(response.content)
+        except Exception as err:
+            self.close()
+            QtWidgets.QMessageBox.information(
+                None,
+                "Palapa",
+                "Gagal mendapatkan informasi layer. Silahkan periksa koneksi internet anda",
+            )
+            return
 
         baseIdentification = metaView["csw:GetRecordByIdResponse"]["gmd:MD_Metadata"]["gmd:identificationInfo"]["gmd:MD_DataIdentification"]
 
@@ -121,3 +128,5 @@ class InformasiLayer(QtWidgets.QDialog, FORM_CLASS):
         self.input_city_distributor.setText(baseDistributor["gmd:contactInfo"]["gmd:CI_Contact"]["gmd:address"]["gmd:CI_Address"]["gmd:city"]["gco:CharacterString"])
         self.input_postal_distributor.setText(baseDistributor["gmd:contactInfo"]["gmd:CI_Contact"]["gmd:address"]["gmd:CI_Address"]["gmd:postalCode"]["gco:CharacterString"])
         self.input_area_distributor.setText(baseDistributor["gmd:contactInfo"]["gmd:CI_Contact"]["gmd:address"]["gmd:CI_Address"]["gmd:administrativeArea"]["gco:CharacterString"])
+
+        self.open()

@@ -29,7 +29,7 @@
       <string notr="true"/>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page_4">
       <property name="geometry">
@@ -37,7 +37,7 @@
         <x>0</x>
         <y>0</y>
         <width>382</width>
-        <height>394</height>
+        <height>379</height>
        </rect>
       </property>
       <attribute name="label">
@@ -166,8 +166,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>382</width>
-        <height>394</height>
+        <width>182</width>
+        <height>352</height>
        </rect>
       </property>
       <property name="font">
@@ -321,8 +321,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>382</width>
-        <height>394</height>
+        <width>191</width>
+        <height>40</height>
        </rect>
       </property>
       <attribute name="label">

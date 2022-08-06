@@ -26,6 +26,7 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
         self.tipeLayer = tipeLayer
         self.tipe = tipe
         self.title = title
+        self.styleInput = styleInput
 
         self.lineEdit_id.setText(id)
         self.lineEdit_title.setText(title)
@@ -36,37 +37,53 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
         self.user = readSetting("user")
         self.password = readSetting("password")
 
-        #Mendownloa daftar style
-        urlStyle= self.url+"/api/getstyles"
-        response = requests.get(urlStyle)
-        DaftarStyle = json.loads(response.content)
-        #Memasuukan style ke dalam combo box
-        for style in DaftarStyle:
-            self.cmb_style.addItem(style['name'])
-
-        #Mensetting combox box agar sesuai dengan yang dipilih user
-        indexSytle = self.cmb_style.findText(styleInput)
-        self.cmb_style.setCurrentIndex(indexSytle)
-
-        #Mensetting agar id dan srs tidak bisa diedit
-        self.lineEdit_id.setReadOnly(True)
-        self.lineEdit_srs.setReadOnly(True)
-
-        if(self.tipe == "info"):
-            self.download_layer.setText("Lihat Layer")
-            self.lineEdit_title.setReadOnly(True)
-            self.textEdit_abstract.setReadOnly(True)
-            self.lineEdit_srs.setReadOnly(True)
-            self.cmb_style.setEnabled(False)
-            self.btn_save.setVisible(False)
-
-        self.btn_tutup.clicked.connect(self.closeTab)
-        self.btn_save.clicked.connect(self.updateLayer)
-        self.download_layer.clicked.connect(self.downloadLayer)
-
     # Mengandle tombol close
     def closeTab(self):
         self.close()
+
+    def setupWorkspace(self):
+        #Mendownload daftar style
+        try:
+            urlStyle= self.url+"/api/getstyles"
+            response = requests.get(urlStyle)
+            DaftarStyle = json.loads(response.content)
+
+            #Memasuukan style ke dalam combo box
+            for style in DaftarStyle:
+                self.cmb_style.addItem(style['name'])
+
+            #Mensetting combox box agar sesuai dengan yang dipilih user
+            indexSytle = self.cmb_style.findText(self.styleInput)
+            self.cmb_style.setCurrentIndex(indexSytle)
+
+            #Mensetting agar id dan srs tidak bisa diedit
+            self.lineEdit_id.setReadOnly(True)
+            self.lineEdit_srs.setReadOnly(True)
+            self.label_status.setVisible(False)
+            if(self.tipe == "info"):
+                self.download_layer.setText("Lihat Layer")
+                self.lineEdit_title.setReadOnly(True)
+                self.textEdit_abstract.setReadOnly(True)
+                self.lineEdit_srs.setReadOnly(True)
+                self.cmb_style.setEnabled(False)
+                self.btn_save.setVisible(False)
+            
+            self.btn_tutup.clicked.connect(self.closeTab)
+            self.btn_save.clicked.connect(self.updateLayer)
+            self.download_layer.clicked.connect(self.downloadLayer)
+
+            self.open()
+        except Exception as err:
+            self.close()
+            QtWidgets.QMessageBox.information(
+                None,
+                "Palapa",
+                "Gagal mendapatkan informasi layer. Silahkan periksa koneksi internet anda",
+            )
+            
+     
+            
+
 
     # Mengimport layer ke dalam QGIS
     def downloadLayer(self):
@@ -89,7 +106,6 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
               
             # Menmassukan layer ka dalam QGIS sebagai layanan WFS
             
-            print(layer,"layer")
             QgsProject.instance().addMapLayer(layer)
             if not layer.isValid():
                 print("Layer failed to load!")
@@ -113,36 +129,41 @@ class InformasiEditLayer(QtWidgets.QDialog, FORM_CLASS):
         abstract = self.textEdit_abstract.toPlainText() 
         style = self.cmb_style.currentText()
 
+        self.label_status.setVisible(True)
+        self.label_status.setText("Layer sedang diproses")
+        self.label_status.setStyleSheet("color: white; background-color: #4AA252; border-radius: 4px;")
         dataPublish = {"pubdata":{"id": id,"aktif":self.aktif, "tipe": self.tipeLayer,"abstract":abstract,"nativename":self.nativeName,"style":style,"title":title}}
         dataPublish = json.dumps(dataPublish)
-
+    
         #Memindahkan proses update ke dalam Thread untuk menghindari freeze
         self.worker = Worker(dataPublish,self.url)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
-        self.thread.start()
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.worker.finished.connect(self.report)
+        self.thread.start()
 
     #Menampilkan progress updating
     def report(self,dataPublish):
-        self.label_progress.setVisible(True)
         self.close()
+
+
         if(dataPublish["RTN"]):
             QtWidgets.QMessageBox.information(
                 None,
                 "Palapa",
                 dataPublish["MSG"],
             )
+            self.refresh.emit()
         else:
             QtWidgets.QMessageBox.information(
                 None,
                 "Palapa",
                 "Layer gagal diedit",
             )
-
+        
 
 class Worker(QThread):
 
@@ -152,13 +173,16 @@ class Worker(QThread):
         super(QThread, self).__init__()
         #print('workerinit')
         self.stopworker = False # initialize the stop variable
-
         self.url = url
         self.data = data
 
     def run(self):
         """Long-running task."""
         url = self.url + "/api/layers/modify"
-        response = requests.post(url,data=f"dataPublish={self.data}")
-        dataPublish = json.loads(response.content)
-        self.finished.emit(dataPublish)
+        try:
+            response = requests.post(url,data=f"dataPublish={self.data}")
+            dataPublish = json.loads(response.content)
+            self.finished.emit(dataPublish)
+        except Exception as err:
+            print(err)
+

@@ -63,7 +63,7 @@ class LayerUmum(QtWidgets.QDialog, FORM_CLASS):
         nativename = dataSelect[9]
 
         informasi = InformasiLayer(nativename)
-        informasi.show()
+        informasi.setup_workspace()
     
     #Mendownload layer dan ditampilkan ke dalam QGIS melalui layanan WFS
     def downloadLayer(self):
@@ -134,48 +134,54 @@ class LayerUmum(QtWidgets.QDialog, FORM_CLASS):
 
     # Merefresh tabel
     def refresh_grid(self):
-        dataset = Dataset()
-        table = dataset.add_table("Umum")
-        table.add_column("identifier")
-        table.add_column("Last Modified")
-        table.add_column("Workspace")
-        table.add_column("Layer Titel")
-        table.add_column("Jenis")
-        table.add_column("Aktif Terpublikasi")
-        table.add_column("SRS")
-        table.add_column("advertised")
-        table.add_column("style")
-        table.add_column("nativename")
-        table.add_column("layer_abstract")
+        try:
+            dataset = Dataset()
+            table = dataset.add_table("Umum")
+            table.add_column("identifier")
+            table.add_column("Last Modified")
+            table.add_column("Workspace")
+            table.add_column("Layer Titel")
+            table.add_column("Jenis")
+            table.add_column("Aktif Terpublikasi")
+            table.add_column("SRS")
+            table.add_column("advertised")
+            table.add_column("style")
+            table.add_column("nativename")
+            table.add_column("layer_abstract")
 
-        self.url = readSetting("url")
-        print(self.url)
-        
-        if(self.url is None):
+            self.url = readSetting("url")
             print(self.url)
-            return
+            
+            if(self.url is None):
+                return
 
-        response = requests.get(self.url+'/api/getWMSlayers')
-        result = json.loads(response.content)
-        self.layerSpasial = [x for x in result if x["layer_aktif"]]
-        
-        for layer in self.layerSpasial:
-            d_row = table.new_row()
-            d_row["identifier"] = layer["layer_id"]
-            d_row["Last Modified"] = layer["last_modified"]
-            d_row["Workspace"] = layer["workspace"]
-            d_row["Layer Titel"] = layer["layer_name"]
-            d_row["Jenis"] = layer["layer_type"]
-            if(layer["layer_aktif"]):
-                d_row["Aktif Terpublikasi"] = "Ya"
-            else:
-                d_row["Aktif Terpublikasi"] = "Tidak"
-            d_row["SRS"] = layer["layer_srs"]
-            d_row["advertised"] = layer["layer_advertised"]
-            d_row["style"] = layer["layer_style"]
-            d_row["nativename"] = layer["layer_nativename"]
-            d_row["layer_abstract"] = layer["layer_abstract"]
+            response = requests.get(self.url+'/api/getWMSlayers')
+            result = json.loads(response.content)
+            self.layerSpasial = [x for x in result if x["layer_aktif"]]
+            
+            for layer in self.layerSpasial:
+                d_row = table.new_row()
+                d_row["identifier"] = layer["layer_id"]
+                d_row["Last Modified"] = layer["last_modified"]
+                d_row["Workspace"] = layer["workspace"]
+                d_row["Layer Titel"] = layer["layer_name"]
+                d_row["Jenis"] = layer["layer_type"]
+                if(layer["layer_aktif"]):
+                    d_row["Aktif Terpublikasi"] = "Ya"
+                else:
+                    d_row["Aktif Terpublikasi"] = "Tidak"
+                d_row["SRS"] = layer["layer_srs"]
+                d_row["advertised"] = layer["layer_advertised"]
+                d_row["style"] = layer["layer_style"]
+                d_row["nativename"] = layer["layer_nativename"]
+                d_row["layer_abstract"] = layer["layer_abstract"]
 
-        dataset.render_to_qtable_widget("Umum", self.table,[0,5,7,8,9,10])
+            dataset.render_to_qtable_widget("Umum", self.table,[0,5,7,8,9,10])
+        except Exception as err:
+            QtWidgets.QMessageBox.information(
+                None,
+                "Palapa",
+                "Gagal mendapatkan daftar layer. Silahkan periksa koneksi internet anda",
+            )
 
         

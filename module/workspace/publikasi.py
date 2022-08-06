@@ -99,41 +99,48 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
 
     # Reload table
     def refresh_grid(self):
-        dataset = Dataset()
-        table = dataset.add_table("Publikasi")
-        table.add_column("identifier")
-        table.add_column("Last Modified")
-        table.add_column("Workspace")
-        table.add_column("Layer Titel")
-        table.add_column("Jenis")
-        table.add_column("Aktif Terpublikasi")
-        table.add_column("SRS")
-        table.add_column("advertised")
-        table.add_column("style")
-        table.add_column("nativename")
-        table.add_column("layer_abstract")
-        
-        response = requests.get(self.url+'/api/getWMSlayers')
-        self.layerSpasial = json.loads(response.content)
-        
-        for layer in self.layerSpasial:
-            d_row = table.new_row()
-            d_row["identifier"] = layer["layer_id"]
-            d_row["Last Modified"] = layer["last_modified"]
-            d_row["Workspace"] = layer["workspace"]
-            d_row["Layer Titel"] = layer["layer_name"]
-            d_row["Jenis"] = layer["layer_type"]
-            if(layer["layer_aktif"]):
-                d_row["Aktif Terpublikasi"] = "Ya"
-            else:
-                d_row["Aktif Terpublikasi"] = "Tidak"
-            d_row["SRS"] = layer["layer_srs"]
-            d_row["advertised"] = layer["layer_advertised"]
-            d_row["style"] = layer["layer_style"]
-            d_row["nativename"] = layer["layer_nativename"]
-            d_row["layer_abstract"] = layer["layer_abstract"]
+        try:
+            dataset = Dataset()
+            table = dataset.add_table("Publikasi")
+            table.add_column("identifier")
+            table.add_column("Last Modified")
+            table.add_column("Workspace")
+            table.add_column("Layer Titel")
+            table.add_column("Jenis")
+            table.add_column("Aktif Terpublikasi")
+            table.add_column("SRS")
+            table.add_column("advertised")
+            table.add_column("style")
+            table.add_column("nativename")
+            table.add_column("layer_abstract")
 
-        dataset.render_to_qtable_widget("Publikasi", self.table_publikasi,[0,7,8,9,10])
+            response = requests.get(self.url+'/api/getWMSlayers')
+            self.layerSpasial = json.loads(response.content)
+
+            for layer in self.layerSpasial:
+                d_row = table.new_row()
+                d_row["identifier"] = layer["layer_id"]
+                d_row["Last Modified"] = layer["last_modified"]
+                d_row["Workspace"] = layer["workspace"]
+                d_row["Layer Titel"] = layer["layer_name"]
+                d_row["Jenis"] = layer["layer_type"]
+                if(layer["layer_aktif"]):
+                    d_row["Aktif Terpublikasi"] = "Ya"
+                else:
+                    d_row["Aktif Terpublikasi"] = "Tidak"
+                d_row["SRS"] = layer["layer_srs"]
+                d_row["advertised"] = layer["layer_advertised"]
+                d_row["style"] = layer["layer_style"]
+                d_row["nativename"] = layer["layer_nativename"]
+                d_row["layer_abstract"] = layer["layer_abstract"]
+
+                dataset.render_to_qtable_widget("Publikasi", self.table_publikasi,[0,7,8,9,10])
+        except Exception as err:
+            QtWidgets.QMessageBox.information(
+                None,
+                "Palapa",
+                "Gagal mendapatkan daftar layer. Silahkan periksa koneksi internet anda",
+            )
 
     # Publikasi data 
     def publikasi(self):
@@ -177,8 +184,7 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
         
         # Menampilkan tab informasi layer
         informasiEditLayer = InformasiEditLayer(tipe="info",id=id,title=title,abstract=abstrack,srs=srs,styleInput=style,nativeName=nativename)
-        informasiEditLayer.show()
-        informasiEditLayer.refresh.connect(self.refresh_grid)
+        informasiEditLayer.setupWorkspace()
 
     # Menhapus layer
     def hapus(self):
@@ -190,8 +196,10 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
         workspace = dataSelect[2]
         prmpt = f"Anda akan menghapus layer {id}"
         result = QtWidgets.QMessageBox.question(self, "Perhatian", prmpt)
+
         if(result != QtWidgets.QMessageBox.Yes):
             return
+
         data = {"pubdata":
                     {
                     "layer": id, 
@@ -210,7 +218,12 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
         self.worker.finished.connect(self.reportDelete)
 
     def reportDelete(self,dataPublish):
+
+        if(dataPublish == False):
+            return
+
         self.refresh_grid()
+
         if(dataPublish["RTN"]):
             QtWidgets.QMessageBox.information(
                 None,
@@ -223,7 +236,7 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
                 None,
                 "Palapa",
                 "Layer gagal dihapus",
-        )
+            )
 
     # Mengedit layer
     def edit(self):
@@ -252,15 +265,14 @@ class Publikasi(QtWidgets.QDialog, FORM_CLASS):
 
         # Menampilkan tab informasi edit layer
         informasiEditLayer = InformasiEditLayer("edit",id,title,abstrack,srs,style,nativename,tipe,aktif)
-        informasiEditLayer.show()
+        informasiEditLayer.setupWorkspace()
+        informasiEditLayer.refresh.connect(self.refresh_grid)
 
 class Worker(QThread):
 
     finished = pyqtSignal(object)
     def __init__(self, data, url):
         super(QThread, self).__init__()
-        #print('workerinit')
-        self.stopworker = False
         #initialize the stop variable
         self.url = url
         self.data = data
@@ -268,8 +280,11 @@ class Worker(QThread):
     def runHapus(self):
         """Long-running task."""
         urlUpload = self.url + "/api/layers/delete"
-        response = requests.post(urlUpload,data=f"dataPublish={self.data}")
-        print(response)
-        dataPublish = json.loads(response.content)
-        print(dataPublish)
-        self.finished.emit(dataPublish)
+        try:
+            response = requests.post(urlUpload,data=f"dataPublish={self.data}")
+            dataPublish = json.loads(response.content)
+            self.finished.emit(dataPublish)
+        except Exception as err:
+            print(err)
+
+     
