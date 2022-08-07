@@ -333,7 +333,6 @@ class UnggahBerkas(QtWidgets.QDialog, FORM_CLASS):
             "dataSetURI":input_linkage_distributor,
             "Distributor_hoursOfService":input_house_distributor,
             "Distributor_contactInstructions":input_contact_distributor,
-            
             }
         }
         data = json.dumps(data)
@@ -343,7 +342,7 @@ class UnggahBerkas(QtWidgets.QDialog, FORM_CLASS):
             QtWidgets.QMessageBox.information(
                 None,
                 "Palapa",
-                "Metadata Berhasil disimpan",
+                "Metadata Berhasil diubah",
             )
             self.close()
         else:

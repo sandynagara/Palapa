@@ -228,7 +228,7 @@ class Metadata(QtWidgets.QDialog, FORM_CLASS):
             QtWidgets.QMessageBox.information(
                     None,
                     "Palapa",
-                    "Metadata gagal diunpublish servis CSW!",
+                    "Metadata gagal dihapus dari servis CSW!",
             )
     
     def unggah_berkas(self):
