@@ -13,7 +13,6 @@ Fungsi dari plugin ini antara lain:
 * Mengupload metadata ke dalam geoportal palapa
 * Mempublish, mengedit, dan menghapus layer spasial yang berada di geoportal Palapa
 * Mempublish metadata ke CSW, mengedit, dan menghapus metadata dari CSW
-* Melakukan register service 
 
 ## Lisensi
 Lisensi plugin ini berada di bawah naungan **GNU-AGPLv3** sebagai berikut:
